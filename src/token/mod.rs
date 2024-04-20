@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub enum TokenType {
     Illegal,
     Eof,
@@ -27,6 +28,6 @@ pub struct Token {
 
 impl Token {
     pub fn new(ttype: TokenType, literal: String) -> Self {
-        Self { ttype,  literal}
+        Self { ttype, literal }
     }
 }
