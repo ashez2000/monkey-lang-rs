@@ -5,6 +5,7 @@ use crate::token::*;
 use super::*;
 
 // #### let statements ####
+
 #[test]
 fn test_let_statements() {
     let input = r"
@@ -37,7 +38,41 @@ fn test_let_statement(stmt: &Statement, expected: &str) {
         Statement::Let(let_stmt) => {
             assert_eq!(let_stmt.ident.name, expected);
         }
-        _ => panic!("not Statement::Let"),
+        _ => panic!("expected Statement::Let"),
+    }
+}
+
+// #### return statements ####
+
+#[test]
+fn test_return_statements() {
+    let input = r"
+        return 5;
+        return 10;
+        return 993322;
+    ";
+
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program();
+    check_parser_errors(&parser);
+
+    match program {
+        None => panic!("expected Some(program), got None"),
+        Some(program) => {
+            assert_eq!(program.statements.len(), 3);
+
+            let tests = vec!["x", "y", "foobar"];
+            for (i, t) in tests.into_iter().enumerate() {
+                let stmt = &program.statements[i];
+                match stmt {
+                    Statement::Return(return_stmt) => {
+                        assert_eq!(return_stmt.token.literal, "return")
+                    }
+                    _ => panic!("expected Statement::Return"),
+                }
+            }
+        }
     }
 }
 

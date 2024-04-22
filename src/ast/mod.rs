@@ -13,6 +13,7 @@ pub trait AstNode {
 // statement types in Monkey Lang
 pub enum Statement {
     Let(LetStatement),
+    Return(ReturnStatement)
 }
 
 // Expression:
@@ -38,6 +39,19 @@ pub struct LetStatement {
 }
 
 impl AstNode for LetStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+
+// ReturnStatement
+// return <expr>;
+pub struct ReturnStatement {
+    pub token: Token,
+    pub expr: Option<Expression>
+}
+
+impl AstNode for ReturnStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }

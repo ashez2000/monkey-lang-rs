@@ -50,17 +50,18 @@ impl Parser {
         self.peek_token = self.lexer.next_token();
     }
 
+    // #### parse statements ####
     //
-    // #### statements ####
-    //
-
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.ttype {
             TokenType::Let => self.parse_let_statement(),
+            TokenType::Return => self.parse_return_statement(),
             _ => None,
         }
     }
 
+    // parse_let_statement
+    //
     fn parse_let_statement(&mut self) -> Option<Statement> {
         if !self.expect_peek(&TokenType::Ident) {
             return None;
@@ -87,6 +88,24 @@ impl Parser {
         };
 
         Some(Statement::Let(let_stmt))
+    }
+
+    // parse_return_statement
+    //
+    fn parse_return_statement(&mut self) -> Option<Statement> {
+        let return_stmt = ReturnStatement {
+            token: self.cur_token.clone(),
+            expr: None,
+        };
+
+        self.next_token();
+
+        // TODO: parse <expr>
+        while !self.cur_token_is(&TokenType::Semicolon) {
+            self.next_token();
+        }
+
+        Some(Statement::Return(return_stmt))
     }
 
     //
