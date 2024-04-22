@@ -54,8 +54,10 @@ impl Lexer {
             '}' => new_token(TokenType::RBrace, self.ch),
 
             '\0' => new_token(TokenType::Eof, self.ch),
+
+            // TODO: pattern match
             _ => {
-                if is_letter(self.ch) {
+                return if is_letter(self.ch) {
                     let literal = self.read_identifier();
                     let tt = lookup_ident(&literal);
                     Token::new(tt, literal)
@@ -63,7 +65,9 @@ impl Lexer {
                     let number = self.read_number();
                     Token::new(TokenType::Int, number)
                 } else {
-                    new_token(TokenType::Illegal, self.ch)
+                    let ch = self.ch;
+                    self.read_char();
+                    new_token(TokenType::Illegal, ch)
                 }
             }
         };

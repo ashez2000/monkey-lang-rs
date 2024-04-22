@@ -23,6 +23,7 @@ pub enum Expression {
 
 // Program:
 // root AST / represents Monkey Lang program as a list of statements
+#[derive(Default)]
 pub struct Program {
     pub statements: Vec<Statement>,
 }
@@ -32,7 +33,7 @@ pub struct Program {
 // let <name> = <expr>;
 pub struct LetStatement {
     pub token: Token, // Let token
-    pub name: Identifier,
+    pub ident: Identifier,
     pub expr: Option<Expression>,
 }
 
