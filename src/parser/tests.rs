@@ -15,8 +15,9 @@ fn test_let_statements() {
 
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
-
     let program = parser.parse_program();
+    check_parser_errors(&parser);
+
     match program {
         None => panic!("expected Some(program), got None"),
         Some(program) => {
@@ -38,4 +39,18 @@ fn test_let_statement(stmt: &Statement, expected: &str) {
         }
         _ => panic!("not Statement::Let"),
     }
+}
+
+fn check_parser_errors(parser: &Parser) {
+    let errors = parser.get_errors();
+
+    if errors.len() == 0 {
+        return;
+    }
+
+    for e in errors {
+        eprintln!("{}", e)
+    }
+
+    panic!("parser errors");
 }
