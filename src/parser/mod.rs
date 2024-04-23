@@ -1,14 +1,21 @@
 mod tests;
 
+use std::collections::HashMap;
+
 use crate::ast::*;
 use crate::lexer::*;
 use crate::token::*;
+
+type PrefixParseFn = fn(parser: &mut Parser) -> Option<Expression>;
+type InfixParseFn = fn(parser: &mut Parser, exp: Expression) -> Option<Expression>;
 
 pub struct Parser {
     lexer: Lexer,
     cur_token: Token,
     peek_token: Token,
     errors: Vec<String>,
+    prefix_parse_fns: HashMap<TokenType, PrefixParseFn>,
+    infix_parse_fns: HashMap<TokenType, InfixParseFn>,
 }
 
 impl Parser {
@@ -18,6 +25,8 @@ impl Parser {
             cur_token: Token::default(),
             peek_token: Token::default(),
             errors: vec![],
+            prefix_parse_fns: HashMap::new(),
+            infix_parse_fns: HashMap::new(),
         };
 
         // set cur and peek tokens
@@ -136,5 +145,13 @@ impl Parser {
             t, self.cur_token.ttype
         );
         self.errors.push(msg);
+    }
+
+    fn register_prefix(&mut self, token_kind: TokenType, prefix_fn: PrefixParseFn) {
+        self.prefix_parse_fns.insert(token_kind, prefix_fn);
+    }
+
+    fn register_infix(&mut self, token_kind: TokenType, infix_fn: InfixParseFn) {
+        self.infix_parse_fns.insert(token_kind, infix_fn);
     }
 }

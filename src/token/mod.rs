@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub enum TokenType {
     #[default]
     Eof,
