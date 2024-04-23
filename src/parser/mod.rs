@@ -34,6 +34,7 @@ impl Parser {
         };
 
         parser.register_prefix(TokenType::Ident, Self::parse_identifier);
+        parser.register_prefix(TokenType::Int, Self::parse_integer_literal);
 
         // set cur and peek tokens
         parser.next_token();
@@ -157,6 +158,8 @@ impl Parser {
         None
     }
 
+    // parse_identifier
+    //
     fn parse_identifier(&mut self) -> Option<Expression> {
         let ident = Identifier {
             token: self.cur_token.clone(),
@@ -164,6 +167,27 @@ impl Parser {
         };
 
         Some(Expression::Ident(ident))
+    }
+
+    // parse_integer_literal
+    //
+    fn parse_integer_literal(&mut self) -> Option<Expression> {
+        let mut literal = IntegerLiteral {
+            token: self.cur_token.clone(),
+            value: Default::default(),
+        };
+
+        match self.cur_token.literal.parse::<i64>() {
+            Ok(value) => {
+                literal.value = value;
+                Some(Expression::Integer(literal))
+            }
+            Err(_) => {
+                let msg = format!("could not parse {} as integer", self.cur_token.literal);
+                self.errors.push(msg);
+                None
+            }
+        }
     }
 
     //

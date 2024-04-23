@@ -46,18 +46,21 @@ impl AstNode for Statement {
 #[derive(Debug)]
 pub enum Expression {
     Ident(Identifier),
+    Integer(IntegerLiteral),
 }
 
 impl AstNode for Expression {
     fn token_literal(&self) -> String {
         match self {
             Self::Ident(i) => i.token.literal.clone(),
+            Self::Integer(i) => i.token.literal.clone(),
         }
     }
 
     fn to_string(&self) -> String {
         match self {
             Self::Ident(i) => i.to_string(),
+            Self::Integer(i) => i.to_string(),
         }
     }
 }
@@ -193,5 +196,22 @@ impl AstNode for Identifier {
 
     fn to_string(&self) -> String {
         self.name.clone()
+    }
+}
+
+// IntegerLiteral:
+#[derive(Debug)]
+pub struct IntegerLiteral {
+    pub token: Token, // Int token
+    pub value: i64,
+}
+
+impl AstNode for IntegerLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        self.value.to_string()
     }
 }
