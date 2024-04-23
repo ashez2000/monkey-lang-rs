@@ -7,13 +7,17 @@ pub trait AstNode {
     // literal value of token
     // used for debugging and testing
     fn token_literal(&self) -> String;
+
+    // string representation of AST struct
+    // for testing and debugging
+    fn to_string(&self) -> String;
 }
 
 // Statement:
 // statement types in Monkey Lang
 pub enum Statement {
     Let(LetStatement),
-    Return(ReturnStatement)
+    Return(ReturnStatement),
 }
 
 // Expression:
@@ -42,18 +46,28 @@ impl AstNode for LetStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }
+
+    // TODO: to_string for expr
+    fn to_string(&self) -> String {
+        format!("let {} = {};", self.ident.to_string(), "None")
+    }
 }
 
 // ReturnStatement
 // return <expr>;
 pub struct ReturnStatement {
     pub token: Token,
-    pub expr: Option<Expression>
+    pub expr: Option<Expression>,
 }
 
 impl AstNode for ReturnStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
+    }
+
+    // TODO: to_string for expr
+    fn to_string(&self) -> String {
+        format!("return {}", "None")
     }
 }
 
@@ -67,5 +81,9 @@ pub struct Identifier {
 impl AstNode for Identifier {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        self.name.clone()
     }
 }
