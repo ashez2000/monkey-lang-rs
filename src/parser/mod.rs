@@ -9,6 +9,10 @@ use crate::token::*;
 type PrefixParseFn = fn(parser: &mut Parser) -> Option<Expression>;
 type InfixParseFn = fn(parser: &mut Parser, exp: Expression) -> Option<Expression>;
 
+enum PrecedenceLevel {
+    Lowest,
+}
+
 pub struct Parser {
     lexer: Lexer,
     cur_token: Token,
@@ -28,6 +32,8 @@ impl Parser {
             prefix_parse_fns: HashMap::new(),
             infix_parse_fns: HashMap::new(),
         };
+
+        parser.register_prefix(TokenType::Ident, Self::parse_identifier);
 
         // set cur and peek tokens
         parser.next_token();
@@ -65,7 +71,7 @@ impl Parser {
         match self.cur_token.ttype {
             TokenType::Let => self.parse_let_statement(),
             TokenType::Return => self.parse_return_statement(),
-            _ => None,
+            _ => self.parse_expression_statement(),
         }
     }
 
@@ -115,6 +121,49 @@ impl Parser {
         }
 
         Some(Statement::Return(return_stmt))
+    }
+
+    // parse_expression_statement
+    //
+    fn parse_expression_statement(&mut self) -> Option<Statement> {
+        let mut expr_stmt = ExpressionStatement {
+            token: self.cur_token.clone(),
+            expr: None,
+        };
+
+        expr_stmt.expr = self.parse_expression(PrecedenceLevel::Lowest);
+
+        // optional semicolon check (usecase for repl)
+        if self.peek_token_is(&TokenType::Semicolon) {
+            self.next_token()
+        }
+
+        Some(Statement::Expression(expr_stmt))
+    }
+
+    //
+    // #### expressions ####
+    //
+
+    // main expression parser
+    fn parse_expression(&mut self, precedence: PrecedenceLevel) -> Option<Expression> {
+        let prefix = self.prefix_parse_fns.get(&self.cur_token.ttype);
+
+        if let Some(prefix_fn) = prefix {
+            let left_expr = prefix_fn(self);
+            return left_expr;
+        }
+
+        None
+    }
+
+    fn parse_identifier(&mut self) -> Option<Expression> {
+        let ident = Identifier {
+            token: self.cur_token.clone(),
+            name: self.cur_token.literal.clone(),
+        };
+
+        Some(Expression::Ident(ident))
     }
 
     //
