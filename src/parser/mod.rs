@@ -9,8 +9,10 @@ use crate::token::*;
 type PrefixParseFn = fn(parser: &mut Parser) -> Option<Expression>;
 type InfixParseFn = fn(parser: &mut Parser, exp: Expression) -> Option<Expression>;
 
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum PrecedenceLevel {
     Lowest,
+    Prefix,
 }
 
 pub struct Parser {
@@ -35,6 +37,8 @@ impl Parser {
 
         parser.register_prefix(TokenType::Ident, Self::parse_identifier);
         parser.register_prefix(TokenType::Int, Self::parse_integer_literal);
+        parser.register_prefix(TokenType::Bang, Self::parse_prefix_expression);
+        parser.register_prefix(TokenType::Minus, Self::parse_prefix_expression);
 
         // set cur and peek tokens
         parser.next_token();
@@ -155,6 +159,8 @@ impl Parser {
             return left_expr;
         }
 
+        // TODO: figure out clone issue
+        self.no_prefix_parse_fn_error(&self.cur_token.ttype.clone());
         None
     }
 
@@ -188,6 +194,25 @@ impl Parser {
                 None
             }
         }
+    }
+
+    // parse prefix expression
+    //
+    fn parse_prefix_expression(&mut self) -> Option<Expression> {
+        let mut prefix_expr = PrefixExpression {
+            token: self.cur_token.clone(),
+            operator: self.cur_token.literal.clone(),
+            expr: Default::default(),
+        };
+
+        self.next_token();
+
+        prefix_expr.expr = match self.parse_expression(PrecedenceLevel::Prefix) {
+            Some(expr) => Box::new(expr),
+            None => return None,
+        };
+
+        Some(Expression::Prefix(prefix_expr))
     }
 
     //
@@ -226,5 +251,10 @@ impl Parser {
 
     fn register_infix(&mut self, token_kind: TokenType, infix_fn: InfixParseFn) {
         self.infix_parse_fns.insert(token_kind, infix_fn);
+    }
+
+    fn no_prefix_parse_fn_error(&mut self, t: &TokenType) {
+        let msg = format!("no prefix parse fn for {:?}", t);
+        self.errors.push(msg);
     }
 }

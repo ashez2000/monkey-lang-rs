@@ -144,6 +144,52 @@ fn testt_integer_literal() {
     }
 }
 
+// #### prefix expressions ####
+
+#[test]
+fn test_parsing_prefix_expressions() {
+    let prefix_tests = vec![("!5", "!", 5), ("-15", "-", 15)];
+
+    for (input, op, val) in prefix_tests {
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program().expect("expected Some(Program)");
+        check_parser_errors(&parser);
+
+        assert_eq!(program.statements.len(), 1);
+
+        match &program.statements[0] {
+            Statement::Expression(expr_stmt) => {
+                let expr = expr_stmt.expr.as_ref().expect("expected Some(Expression)");
+
+                match expr {
+                    Expression::Prefix(prefix_exp) => {
+                        assert_eq!(prefix_exp.operator, op);
+                        test_integer_literal(&prefix_exp.expr, val);
+                    }
+                    other => panic!("expected Expression::Prefix. got={:?}", other),
+                }
+            }
+
+            other => panic!("expected Statement::Expression, got = {:?}", other),
+        }
+    }
+}
+
+// #### test helpers ####
+
+fn test_integer_literal(expr: &Expression, value: i64) {
+    match expr {
+        Expression::Integer(i) => {
+            assert_eq!(i.value, value);
+        }
+        other => panic!(
+            "expected Expression::Integer, got = {}",
+            other.token_literal()
+        ),
+    }
+}
+
 fn check_parser_errors(parser: &Parser) {
     let errors = parser.get_errors();
 

@@ -1,3 +1,5 @@
+use std::default;
+
 use crate::token::*;
 
 // AstNode:
@@ -43,10 +45,13 @@ impl AstNode for Statement {
 
 // Expression:
 // expressions in Monkey Lang
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Expression {
+    #[default]
+    None,
     Ident(Identifier),
     Integer(IntegerLiteral),
+    Prefix(PrefixExpression),
 }
 
 impl AstNode for Expression {
@@ -54,6 +59,8 @@ impl AstNode for Expression {
         match self {
             Self::Ident(i) => i.token.literal.clone(),
             Self::Integer(i) => i.token.literal.clone(),
+            Self::Prefix(i) => i.token.literal.clone(),
+            Self::None => "".into(),
         }
     }
 
@@ -61,6 +68,8 @@ impl AstNode for Expression {
         match self {
             Self::Ident(i) => i.to_string(),
             Self::Integer(i) => i.to_string(),
+            Self::Prefix(i) => i.to_string(),
+            Self::None => "".into(),
         }
     }
 }
@@ -213,5 +222,32 @@ impl AstNode for IntegerLiteral {
 
     fn to_string(&self) -> String {
         self.value.to_string()
+    }
+}
+
+// PrefixExpression:
+// <op><expr>;
+// ex: !foo, -100
+#[derive(Debug)]
+pub struct PrefixExpression {
+    pub token: Token,
+    pub operator: String, // TODO: narrow down type
+    pub expr: Box<Expression>,
+}
+
+impl AstNode for PrefixExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::new();
+
+        out.push_str("(");
+        out.push_str(&self.operator);
+        out.push_str(&self.expr.to_string());
+        out.push_str(")");
+
+        out
     }
 }
