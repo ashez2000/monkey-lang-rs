@@ -176,6 +176,48 @@ fn test_parsing_prefix_expressions() {
     }
 }
 
+// #### test infix expressions ####
+
+#[test]
+fn test_infix_expressions() {
+    let infix_tests = vec![
+        ("5 + 5;", 5, "+", 5),
+        ("5 - 5;", 5, "-", 5),
+        ("5 * 5;", 5, "*", 5),
+        ("5 / 5;", 5, "/", 5),
+        ("5 > 5;", 5, ">", 5),
+        ("5 < 5;", 5, "<", 5),
+        ("5 == 5;", 5, "==", 5),
+        ("5 != 5;", 5, "!=", 5),
+    ];
+
+    for (input, left, op, right) in infix_tests {
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program().expect("expected Some(Program)");
+        check_parser_errors(&parser);
+
+        assert_eq!(program.statements.len(), 1);
+
+        match &program.statements[0] {
+            Statement::Expression(expr_stmt) => {
+                let expr = expr_stmt.expr.as_ref().expect("expected Some(Expression)");
+
+                match expr {
+                    Expression::Infix(infix_expr) => {
+                        assert_eq!(infix_expr.operator, op);
+                        test_integer_literal(&infix_expr.left, left);
+                        test_integer_literal(&infix_expr.right, right);
+                    }
+                    other => panic!("expected Expression::Infix. got={:?}", other),
+                }
+            }
+
+            other => panic!("expected Statement::Expression, got = {:?}", other),
+        }
+    }
+}
+
 // #### test helpers ####
 
 fn test_integer_literal(expr: &Expression, value: i64) {

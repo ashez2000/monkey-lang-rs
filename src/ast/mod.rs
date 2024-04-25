@@ -52,6 +52,7 @@ pub enum Expression {
     Ident(Identifier),
     Integer(IntegerLiteral),
     Prefix(PrefixExpression),
+    Infix(InfixExpression),
 }
 
 impl AstNode for Expression {
@@ -60,6 +61,7 @@ impl AstNode for Expression {
             Self::Ident(i) => i.token.literal.clone(),
             Self::Integer(i) => i.token.literal.clone(),
             Self::Prefix(i) => i.token.literal.clone(),
+            Self::Infix(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -69,6 +71,7 @@ impl AstNode for Expression {
             Self::Ident(i) => i.to_string(),
             Self::Integer(i) => i.to_string(),
             Self::Prefix(i) => i.to_string(),
+            Self::Infix(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -246,6 +249,37 @@ impl AstNode for PrefixExpression {
         out.push_str("(");
         out.push_str(&self.operator);
         out.push_str(&self.expr.to_string());
+        out.push_str(")");
+
+        out
+    }
+}
+
+// InfixExpression:
+// <left><op><right>;
+// ex: !foo, -100
+#[derive(Debug)]
+pub struct InfixExpression {
+    pub token: Token,
+    pub operator: String, // TODO: narrow down type
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
+}
+
+impl AstNode for InfixExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::new();
+
+        out.push_str("(");
+        out.push_str(&self.left.to_string());
+        out.push_str(" ");
+        out.push_str(&self.operator);
+        out.push_str(" ");
+        out.push_str(&self.right.to_string());
         out.push_str(")");
 
         out

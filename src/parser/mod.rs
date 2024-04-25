@@ -12,7 +12,25 @@ type InfixParseFn = fn(parser: &mut Parser, exp: Expression) -> Option<Expressio
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum PrecedenceLevel {
     Lowest,
+    Equals,
+    LtGt,
+    Sum,
+    Product,
     Prefix,
+}
+
+fn precedence_map(kind: &TokenType) -> PrecedenceLevel {
+    return match kind {
+        TokenType::Eq => PrecedenceLevel::Equals,
+        TokenType::NotEq => PrecedenceLevel::Equals,
+        TokenType::Lt => PrecedenceLevel::LtGt,
+        TokenType::Gt => PrecedenceLevel::LtGt,
+        TokenType::Plus => PrecedenceLevel::Sum,
+        TokenType::Minus => PrecedenceLevel::Sum,
+        TokenType::Slash => PrecedenceLevel::Product,
+        TokenType::Asterisk => PrecedenceLevel::Product,
+        _ => PrecedenceLevel::Lowest,
+    };
 }
 
 pub struct Parser {
@@ -39,6 +57,15 @@ impl Parser {
         parser.register_prefix(TokenType::Int, Self::parse_integer_literal);
         parser.register_prefix(TokenType::Bang, Self::parse_prefix_expression);
         parser.register_prefix(TokenType::Minus, Self::parse_prefix_expression);
+
+        parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
+        parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
+        parser.register_infix(TokenType::Slash, Self::parse_infix_expression);
+        parser.register_infix(TokenType::Asterisk, Self::parse_infix_expression);
+        parser.register_infix(TokenType::Eq, Self::parse_infix_expression);
+        parser.register_infix(TokenType::NotEq, Self::parse_infix_expression);
+        parser.register_infix(TokenType::Lt, Self::parse_infix_expression);
+        parser.register_infix(TokenType::Gt, Self::parse_infix_expression);
 
         // set cur and peek tokens
         parser.next_token();
@@ -155,7 +182,16 @@ impl Parser {
         let prefix = self.prefix_parse_fns.get(&self.cur_token.ttype);
 
         if let Some(prefix_fn) = prefix {
-            let left_expr = prefix_fn(self);
+            let mut left_expr = prefix_fn(self);
+
+            // ????
+            while !self.peek_token_is(&TokenType::Semicolon) && precedence < self.peek_precedence()
+            {
+                let infix = self.infix_parse_fns.get(&self.peek_token.ttype);
+                if let Some(infix_fn) = infix {
+                    left_expr = infix_fn(self, left_expr.unwrap());
+                }
+            }
             return left_expr;
         }
 
@@ -215,6 +251,29 @@ impl Parser {
         Some(Expression::Prefix(prefix_expr))
     }
 
+    // parse infix expression
+    //
+    fn parse_infix_expression(&mut self, left: Expression) -> Option<Expression> {
+        self.next_token(); // ???
+
+        let mut infix_expr = InfixExpression {
+            token: self.cur_token.clone(),
+            operator: self.cur_token.literal.clone(),
+            left: Box::new(left),
+            right: Default::default(),
+        };
+
+        let p = self.cur_precedence();
+        self.next_token();
+
+        match self.parse_expression(p) {
+            Some(expr) => infix_expr.right = Box::new(expr),
+            None => return None,
+        }
+
+        Some(Expression::Infix(infix_expr))
+    }
+
     //
     // #### helpers ####
     //
@@ -256,5 +315,13 @@ impl Parser {
     fn no_prefix_parse_fn_error(&mut self, t: &TokenType) {
         let msg = format!("no prefix parse fn for {:?}", t);
         self.errors.push(msg);
+    }
+
+    fn peek_precedence(&self) -> PrecedenceLevel {
+        precedence_map(&self.peek_token.ttype)
+    }
+
+    fn cur_precedence(&self) -> PrecedenceLevel {
+        precedence_map(&self.cur_token.ttype)
     }
 }
