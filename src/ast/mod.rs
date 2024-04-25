@@ -58,6 +58,7 @@ pub enum Expression {
     Infix(InfixExpression),
     Boolean(BooleanLiteral),
     If(IfExpression),
+    Fn(FunctionLiteral),
 }
 
 impl AstNode for Expression {
@@ -69,6 +70,7 @@ impl AstNode for Expression {
             Self::Infix(i) => i.token.literal.clone(),
             Self::Boolean(i) => i.token.literal.clone(),
             Self::If(i) => i.token.literal.clone(),
+            Self::Fn(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -81,6 +83,7 @@ impl AstNode for Expression {
             Self::Infix(i) => i.to_string(),
             Self::Boolean(i) => i.to_string(),
             Self::If(i) => i.to_string(),
+            Self::Fn(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -363,6 +366,38 @@ impl AstNode for IfExpression {
             out.push_str("else ");
             out.push_str(alt.to_string().as_str());
         }
+
+        out
+    }
+}
+
+// FunctionLiteral:
+// fn <params> <body>
+#[derive(Debug, Default)]
+pub struct FunctionLiteral {
+    pub token: Token,
+    pub parameters: Vec<Identifier>,
+    pub body: BlockStatement,
+}
+
+impl AstNode for FunctionLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+        let mut params = vec![];
+
+        for param in &self.parameters {
+            params.push(param.to_string());
+        }
+
+        out.push_str(self.token_literal().as_str());
+        out.push_str("(");
+        out.push_str(params.join(", ").as_str());
+        out.push_str(")");
+        out.push_str(self.body.to_string().as_str());
 
         out
     }

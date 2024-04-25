@@ -378,6 +378,85 @@ fn test_if_else_expression() {
     }
 }
 
+// #### test function literals parsing ####
+#[test]
+fn test_function_literal_parsing() {
+    let input = "fn(x, y) { x + y; }";
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program().unwrap();
+    check_parser_errors(&parser);
+
+    assert_eq!(program.statements.len(), 1);
+
+    match &program.statements[0] {
+        Statement::Expression(expr_stmt) => match expr_stmt.expr.as_ref().unwrap() {
+            Expression::Fn(fn_lit) => {
+                assert_eq!(fn_lit.parameters.len(), 2);
+
+                match &fn_lit.parameters[0] {
+                    Identifier { token, name } => {
+                        assert_eq!(name, "x");
+                        assert_eq!(token.literal, "x");
+                    }
+                }
+
+                match &fn_lit.parameters[1] {
+                    Identifier { token, name } => {
+                        assert_eq!(name, "y");
+                        assert_eq!(token.literal, "y");
+                    }
+                }
+
+                assert_eq!(fn_lit.body.statements.len(), 1);
+
+                match &fn_lit.body.statements[0] {
+                    Statement::Expression(expr_stmt) => test_infix_expression(
+                        expr_stmt.expr.as_ref().unwrap(),
+                        Box::new(String::from("x")),
+                        String::from("+"),
+                        Box::new(String::from("y")),
+                    ),
+                    _ => panic!("expected Statement::Expression"),
+                }
+            }
+            _ => panic!("expected Expression::Fn"),
+        },
+        _ => panic!("expected Statement::Expression"),
+    }
+}
+
+#[test]
+fn test_function_parameter_parsing() {
+    let tests = vec![
+        ("fn() {};", vec![]),
+        ("fn(x) {};", vec!["x"]),
+        ("fn(x, y, z) {};", vec!["x", "y", "z"]),
+    ];
+
+    for test in tests {
+        let lexer = Lexer::new(test.0);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program().unwrap();
+        check_parser_errors(&parser);
+
+        match &program.statements[0] {
+            Statement::Expression(expr_stmt) => match expr_stmt.expr.as_ref().unwrap() {
+                Expression::Fn(fn_lit) => {
+                    assert_eq!(fn_lit.parameters.len(), test.1.len());
+
+                    for (idx, ident) in test.1.into_iter().enumerate() {
+                        assert_eq!(fn_lit.parameters[idx].name, ident);
+                        assert_eq!(fn_lit.parameters[idx].token_literal(), ident);
+                    }
+                }
+                _ => panic!("expected Expression::Fn"),
+            },
+            _ => panic!("expected Statement::Expression"),
+        }
+    }
+}
+
 // #### test helpers ####
 
 fn test_integer_literal(expr: &Expression, value: i64) {

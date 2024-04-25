@@ -61,6 +61,7 @@ impl Parser {
         parser.register_prefix(TokenType::False, Self::parse_boolean);
         parser.register_prefix(TokenType::LParen, Self::parse_grouped_expression);
         parser.register_prefix(TokenType::If, Self::parse_if_expression);
+        parser.register_prefix(TokenType::Function, Self::parse_function_literal);
 
         parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
@@ -324,6 +325,8 @@ impl Parser {
         expr
     }
 
+    // parse_if_expression
+    //
     fn parse_if_expression(&mut self) -> Option<Expression> {
         let mut if_expr = IfExpression {
             token: self.cur_token.clone(),
@@ -365,6 +368,71 @@ impl Parser {
         }
 
         Some(Expression::If(if_expr))
+    }
+
+    // parse_function_literal
+    //
+    fn parse_function_literal(&mut self) -> Option<Expression> {
+        let mut fn_lit = FunctionLiteral {
+            token: self.cur_token.clone(),
+            body: Default::default(),
+            parameters: vec![],
+        };
+
+        if !self.expect_peek(&TokenType::LParen) {
+            return None;
+        }
+
+        fn_lit.parameters = self
+            .parse_function_parameters()
+            .expect("error parsing fn parameters");
+
+        if !self.expect_peek(&TokenType::LBrace) {
+            return None;
+        }
+
+        fn_lit.body = self.parse_block_statement();
+
+        Some(Expression::Fn(fn_lit))
+    }
+
+    // parse_function_paramenters
+    //
+    fn parse_function_parameters(&mut self) -> Option<Vec<Identifier>> {
+        let mut identifiers = vec![];
+
+        // zero fn params
+        if self.peek_token_is(&TokenType::RParen) {
+            self.next_token();
+            return Some(identifiers);
+        }
+
+        self.next_token();
+
+        let ident = Identifier {
+            token: self.cur_token.clone(),
+            name: self.cur_token.literal.clone(),
+        };
+
+        identifiers.push(ident);
+
+        while self.peek_token_is(&TokenType::Comma) {
+            self.next_token();
+            self.next_token();
+
+            let ident = Identifier {
+                token: self.cur_token.clone(),
+                name: self.cur_token.literal.clone(),
+            };
+
+            identifiers.push(ident);
+        }
+
+        if !self.expect_peek(&TokenType::RParen) {
+            return None;
+        }
+
+        Some(identifiers)
     }
 
     //
