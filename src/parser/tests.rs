@@ -245,6 +245,8 @@ fn test_infix_expressions() {
     }
 }
 
+// #### test precedence parsing ####
+
 #[test]
 fn test_precedence_parsing() {
     let tests = vec![
@@ -285,6 +287,94 @@ fn test_precedence_parsing() {
         check_parser_errors(&parser);
 
         assert_eq!(program.to_string(), t.1)
+    }
+}
+
+// #### test if expression ####
+
+#[test]
+fn test_if_expression() {
+    let input = "if (x < y) { x }";
+
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program().unwrap();
+    check_parser_errors(&parser);
+
+    assert_eq!(program.statements.len(), 1);
+
+    match &program.statements[0] {
+        Statement::Expression(expr_stmt) => match expr_stmt.expr.as_ref().unwrap() {
+            Expression::If(if_expr) => {
+                // TODO: deal with Any/Box<String>
+                test_infix_expression(
+                    &if_expr.condition,
+                    Box::new(String::from("x")),
+                    String::from("<"),
+                    Box::new(String::from("y")),
+                );
+
+                assert_eq!(if_expr.consequence.statements.len(), 1);
+
+                match &if_expr.consequence.statements[0] {
+                    Statement::Expression(consequence) => test_identifier(
+                        consequence
+                            .expr
+                            .as_ref()
+                            .expect("error parsing consequence"),
+                        "x",
+                    ),
+                    _ => panic!("expected Statement::Expression"),
+                }
+
+                assert!(&if_expr.alternative.is_none());
+            }
+            _ => panic!("expected Expression::IF"),
+        },
+        _ => panic!("expected Statement::Expression"),
+    }
+}
+
+// #### test if else expression ####
+
+#[test]
+fn test_if_else_expression() {
+    let input = "if (x < y) { x } else { y }";
+
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program().unwrap();
+    check_parser_errors(&parser);
+
+    assert_eq!(program.statements.len(), 1);
+
+    match &program.statements[0] {
+        Statement::Expression(expr_stmt) => match expr_stmt.expr.as_ref().unwrap() {
+            Expression::If(if_expr) => {
+                // TODO: deal with Any/Box<String>
+                test_infix_expression(
+                    &if_expr.condition,
+                    Box::new(String::from("x")),
+                    String::from("<"),
+                    Box::new(String::from("y")),
+                );
+
+                assert_eq!(if_expr.consequence.statements.len(), 1);
+
+                match &if_expr.consequence.statements[0] {
+                    Statement::Expression(consequence) => test_identifier(
+                        consequence
+                            .expr
+                            .as_ref()
+                            .expect("error parsing consequence"),
+                        "x",
+                    ),
+                    _ => panic!("expected Statement::Expression"),
+                }
+            }
+            _ => panic!("expected Expression::IF"),
+        },
+        _ => panic!("expected Statement::Expression"),
     }
 }
 

@@ -23,6 +23,7 @@ pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
     Expression(ExpressionStatement),
+    Block(BlockStatement),
 }
 
 impl AstNode for Statement {
@@ -31,6 +32,7 @@ impl AstNode for Statement {
             Self::Let(let_stmt) => let_stmt.token.literal.clone(),
             Self::Return(return_stmt) => return_stmt.token.literal.clone(),
             Self::Expression(expr_stmt) => expr_stmt.token.literal.clone(),
+            Self::Block(block_stmt) => block_stmt.token.literal.clone(),
         }
     }
 
@@ -39,6 +41,7 @@ impl AstNode for Statement {
             Self::Let(let_stmt) => let_stmt.to_string(),
             Self::Return(return_stmt) => return_stmt.to_string(),
             Self::Expression(expr_stmt) => expr_stmt.to_string(),
+            Self::Block(block_stmt) => block_stmt.to_string(),
         }
     }
 }
@@ -54,6 +57,7 @@ pub enum Expression {
     Prefix(PrefixExpression),
     Infix(InfixExpression),
     Boolean(BooleanLiteral),
+    If(IfExpression),
 }
 
 impl AstNode for Expression {
@@ -64,6 +68,7 @@ impl AstNode for Expression {
             Self::Prefix(i) => i.token.literal.clone(),
             Self::Infix(i) => i.token.literal.clone(),
             Self::Boolean(i) => i.token.literal.clone(),
+            Self::If(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -75,6 +80,7 @@ impl AstNode for Expression {
             Self::Prefix(i) => i.to_string(),
             Self::Infix(i) => i.to_string(),
             Self::Boolean(i) => i.to_string(),
+            Self::If(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -197,6 +203,29 @@ impl AstNode for ExpressionStatement {
     }
 }
 
+// BlockStatement:
+#[derive(Debug, Default)]
+pub struct BlockStatement {
+    pub token: Token,
+    pub statements: Vec<Statement>,
+}
+
+impl AstNode for BlockStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+
+        for stmt in &self.statements {
+            out.push_str(stmt.to_string().as_str());
+        }
+
+        out
+    }
+}
+
 // Identifier:
 #[derive(Debug)]
 pub struct Identifier {
@@ -303,5 +332,38 @@ impl AstNode for BooleanLiteral {
 
     fn to_string(&self) -> String {
         self.value.to_string()
+    }
+}
+
+// IfExpression:
+// if (<expr>) <consequence_block>
+// if (<expr>) <consequence_block> else <alternative_block>
+#[derive(Debug, Default)]
+pub struct IfExpression {
+    pub token: Token,
+    pub condition: Box<Expression>,
+    pub consequence: BlockStatement,
+    pub alternative: Option<BlockStatement>,
+}
+
+impl AstNode for IfExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+
+        out.push_str("if");
+        out.push_str(self.condition.to_string().as_str());
+        out.push_str(" ");
+        out.push_str(self.consequence.to_string().as_str());
+
+        if let Some(alt) = &self.alternative {
+            out.push_str("else ");
+            out.push_str(alt.to_string().as_str());
+        }
+
+        out
     }
 }

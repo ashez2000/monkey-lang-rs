@@ -60,6 +60,7 @@ impl Parser {
         parser.register_prefix(TokenType::True, Self::parse_boolean);
         parser.register_prefix(TokenType::False, Self::parse_boolean);
         parser.register_prefix(TokenType::LParen, Self::parse_grouped_expression);
+        parser.register_prefix(TokenType::If, Self::parse_if_expression);
 
         parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
@@ -174,6 +175,29 @@ impl Parser {
         }
 
         Some(Statement::Expression(expr_stmt))
+    }
+
+    // parse_block_statement
+    //
+    fn parse_block_statement(&mut self) -> BlockStatement {
+        let mut block = BlockStatement {
+            token: self.cur_token.clone(),
+            statements: vec![],
+        };
+
+        self.next_token();
+
+        while !self.cur_token_is(&TokenType::RBrace) && !self.cur_token_is(&TokenType::Eof) {
+            let stmt = self.parse_statement();
+
+            if let Some(stmt) = stmt {
+                block.statements.push(stmt);
+            }
+
+            self.next_token();
+        }
+
+        block
     }
 
     //
@@ -298,6 +322,49 @@ impl Parser {
         }
 
         expr
+    }
+
+    fn parse_if_expression(&mut self) -> Option<Expression> {
+        let mut if_expr = IfExpression {
+            token: self.cur_token.clone(),
+            alternative: None,
+            condition: Default::default(),
+            consequence: Default::default(),
+        };
+
+        if !self.expect_peek(&TokenType::LParen) {
+            return None;
+        }
+
+        self.next_token();
+
+        // TODO: refactor to Result
+        if_expr.condition = Box::new(
+            self.parse_expression(PrecedenceLevel::Lowest)
+                .expect("error parsing condition"),
+        );
+
+        if !self.expect_peek(&TokenType::RParen) {
+            return None;
+        }
+
+        if !self.expect_peek(&TokenType::LBrace) {
+            return None;
+        }
+
+        if_expr.consequence = self.parse_block_statement();
+
+        if self.peek_token_is(&TokenType::Else) {
+            self.next_token();
+
+            if !self.expect_peek(&TokenType::LBrace) {
+                return None;
+            }
+
+            if_expr.alternative = Some(self.parse_block_statement());
+        }
+
+        Some(Expression::If(if_expr))
     }
 
     //
