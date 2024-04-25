@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use crate::ast::*;
 use crate::lexer::*;
 use crate::token::*;
@@ -213,7 +215,7 @@ fn test_parsing_prefix_expressions() {
 
 #[test]
 fn test_infix_expressions() {
-    let infix_tests = vec![
+    let infix_tests: Vec<(&str, i64, &str, i64)> = vec![
         ("5 + 5;", 5, "+", 5),
         ("5 - 5;", 5, "-", 5),
         ("5 * 5;", 5, "*", 5),
@@ -235,15 +237,7 @@ fn test_infix_expressions() {
         match &program.statements[0] {
             Statement::Expression(expr_stmt) => {
                 let expr = expr_stmt.expr.as_ref().expect("expected Some(Expression)");
-
-                match expr {
-                    Expression::Infix(infix_expr) => {
-                        assert_eq!(infix_expr.operator, op);
-                        test_integer_literal(&infix_expr.left, left);
-                        test_integer_literal(&infix_expr.right, right);
-                    }
-                    other => panic!("expected Expression::Infix. got={:?}", other),
-                }
+                test_infix_expression(expr, Box::new(left), op.into(), Box::new(right));
             }
 
             other => panic!("expected Statement::Expression, got = {:?}", other),
@@ -296,6 +290,49 @@ fn test_integer_literal(expr: &Expression, value: i64) {
             "expected Expression::Integer, got = {}",
             other.token_literal()
         ),
+    }
+}
+
+fn test_identifier(expr: &Expression, value: &str) {
+    match expr {
+        Expression::Ident(i) => {
+            assert_eq!(i.name, value);
+        }
+        _ => panic!("expected Expression::Ident"),
+    }
+}
+
+fn test_literal_expression(expr: &Expression, expected: Box<dyn Any>) {
+    if let Some(s) = expected.downcast_ref::<String>() {
+        test_identifier(expr, s);
+        return;
+    }
+
+    if let Some(i) = expected.downcast_ref::<i64>() {
+        test_integer_literal(expr, i.to_owned());
+        return;
+    }
+
+    panic!("invalid type")
+}
+
+fn test_infix_expression(
+    expr: &Expression,
+    left: Box<dyn Any>,
+    operator: String,
+    right: Box<dyn Any>,
+) {
+    match expr {
+        Expression::Infix(infix_exp) => {
+            test_literal_expression(&infix_exp.left, left);
+            assert_eq!(
+                infix_exp.operator, operator,
+                "operator is not {}. got={}",
+                operator, infix_exp.operator
+            );
+            test_literal_expression(&infix_exp.right, right);
+        }
+        _ => panic!("expected Expression::Infix"),
     }
 }
 
