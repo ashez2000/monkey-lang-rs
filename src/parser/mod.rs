@@ -57,6 +57,8 @@ impl Parser {
         parser.register_prefix(TokenType::Int, Self::parse_integer_literal);
         parser.register_prefix(TokenType::Bang, Self::parse_prefix_expression);
         parser.register_prefix(TokenType::Minus, Self::parse_prefix_expression);
+        parser.register_prefix(TokenType::True, Self::parse_boolean);
+        parser.register_prefix(TokenType::False, Self::parse_boolean);
 
         parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
@@ -230,6 +232,15 @@ impl Parser {
                 None
             }
         }
+    }
+
+    // parse_boolean
+    //
+    fn parse_boolean(&mut self) -> Option<Expression> {
+        Some(Expression::Boolean(BooleanLiteral {
+            token: self.cur_token.clone(),
+            value: self.cur_token_is(&TokenType::True),
+        }))
     }
 
     // parse prefix expression

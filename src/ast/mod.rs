@@ -53,6 +53,7 @@ pub enum Expression {
     Integer(IntegerLiteral),
     Prefix(PrefixExpression),
     Infix(InfixExpression),
+    Boolean(BooleanLiteral),
 }
 
 impl AstNode for Expression {
@@ -62,6 +63,7 @@ impl AstNode for Expression {
             Self::Integer(i) => i.token.literal.clone(),
             Self::Prefix(i) => i.token.literal.clone(),
             Self::Infix(i) => i.token.literal.clone(),
+            Self::Boolean(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -72,6 +74,7 @@ impl AstNode for Expression {
             Self::Integer(i) => i.to_string(),
             Self::Prefix(i) => i.to_string(),
             Self::Infix(i) => i.to_string(),
+            Self::Boolean(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -283,5 +286,22 @@ impl AstNode for InfixExpression {
         out.push_str(")");
 
         out
+    }
+}
+
+// BooleanLiteral:
+#[derive(Debug)]
+pub struct BooleanLiteral {
+    pub token: Token, // True / False
+    pub value: bool,
+}
+
+impl AstNode for BooleanLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        self.value.to_string()
     }
 }

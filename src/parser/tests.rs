@@ -144,6 +144,39 @@ fn testt_integer_literal() {
     }
 }
 
+// #### boolean literal ####
+
+#[test]
+fn test_boolean_literal() {
+    let input = "true;";
+
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program();
+    check_parser_errors(&parser);
+
+    match program {
+        None => panic!("expected Some(program), got None"),
+        Some(program) => {
+            assert_eq!(program.statements.len(), 1);
+
+            let stmt = &program.statements[0];
+            match stmt {
+                Statement::Expression(expr_stmt) => match &expr_stmt.expr {
+                    Some(expr) => match expr {
+                        Expression::Boolean(i) => {
+                            assert_eq!(i.value, true)
+                        }
+                        _ => panic!("expected Expression::Boolean"),
+                    },
+                    None => panic!("expected Some expression stmt"),
+                },
+                _ => panic!("expected Statement::Expression"),
+            }
+        }
+    }
+}
+
 // #### prefix expressions ####
 
 #[test]
