@@ -1,7 +1,8 @@
 use std::io::{stdin, stdout, Write};
 
+use crate::ast::AstNode;
 use crate::lexer::*;
-use crate::token::*;
+use crate::parser::*;
 
 pub fn start() {
     loop {
@@ -11,19 +12,22 @@ pub fn start() {
         let mut buf = String::new();
         stdin().read_line(&mut buf).unwrap();
 
-        let mut lexer = Lexer::new(&buf);
-        loop {
-            let tok = lexer.next_token();
-            let mut out = format!("{:?}", tok.ttype);
-            if tok.ttype == TokenType::Ident || tok.ttype == TokenType::Int {
-                out.push_str(&format!("({})", tok.literal));
-            }
+        let lexer = Lexer::new(&buf);
+        let mut parser = Parser::new(lexer);
 
-            println!("{}", out);
-
-            if tok.ttype == TokenType::Eof {
-                break;
-            }
+        let program = parser.parse_program().expect("error parsing program");
+        if parser.get_errors().len() != 0 {
+            print_parse_errors(parser.get_errors());
+            continue;
         }
+
+        println!("{}", program.to_string());
+    }
+}
+
+fn print_parse_errors(errors: &Vec<String>) {
+    eprintln!("Oops! We ran into parser errors");
+    for e in errors {
+        eprintln!("\t-> {}", e);
     }
 }
