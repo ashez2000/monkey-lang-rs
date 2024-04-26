@@ -131,16 +131,17 @@ impl Parser {
             return None;
         }
 
-        // TODO: parse <expr>
-        while !self.cur_token_is(&TokenType::Semicolon) {
-            self.next_token();
-        }
+        self.next_token();
 
         let let_stmt = LetStatement {
             token: Token::new(TokenType::Let, "let".to_string()),
             ident,
-            expr: None,
+            expr: self.parse_expression(PrecedenceLevel::Lowest),
         };
+
+        if self.peek_token_is(&TokenType::Semicolon) {
+            self.next_token();
+        }
 
         Some(Statement::Let(let_stmt))
     }
@@ -148,15 +149,16 @@ impl Parser {
     // parse_return_statement
     //
     fn parse_return_statement(&mut self) -> Option<Statement> {
-        let return_stmt = ReturnStatement {
+        let mut return_stmt = ReturnStatement {
             token: self.cur_token.clone(),
             expr: None,
         };
 
         self.next_token();
 
-        // TODO: parse <expr>
-        while !self.cur_token_is(&TokenType::Semicolon) {
+        return_stmt.expr = self.parse_expression(PrecedenceLevel::Lowest);
+
+        if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
         }
 
