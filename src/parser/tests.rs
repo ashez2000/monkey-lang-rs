@@ -457,6 +457,41 @@ fn test_function_parameter_parsing() {
     }
 }
 
+#[test]
+fn test_call_expression_parsing() {
+    let input = "add(1, 2 * 3, 4 + 5);";
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program().unwrap();
+    check_parser_errors(&parser);
+
+    assert_eq!(program.statements.len(), 1);
+
+    match &program.statements[0] {
+        Statement::Expression(expr_stmt) => match expr_stmt.expr.as_ref().unwrap() {
+            Expression::Call(call_expr) => {
+                test_identifier(&call_expr.function, "add");
+                assert_eq!(call_expr.arguments.len(), 3);
+                test_literal_expression(&call_expr.arguments[0], Box::new(1_i64));
+                test_infix_expression(
+                    &call_expr.arguments[1],
+                    Box::new(2_i64),
+                    String::from("*"),
+                    Box::new(3_i64),
+                );
+                test_infix_expression(
+                    &call_expr.arguments[2],
+                    Box::new(4_i64),
+                    String::from("+"),
+                    Box::new(5_i64),
+                );
+            }
+            _ => panic!("expected Expression::Call"),
+        },
+        _ => panic!("exptected Statement::Expression"),
+    }
+}
+
 // #### test helpers ####
 
 fn test_integer_literal(expr: &Expression, value: i64) {

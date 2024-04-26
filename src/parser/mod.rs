@@ -17,6 +17,7 @@ enum PrecedenceLevel {
     Sum,
     Product,
     Prefix,
+    Call,
 }
 
 fn precedence_map(kind: &TokenType) -> PrecedenceLevel {
@@ -29,6 +30,7 @@ fn precedence_map(kind: &TokenType) -> PrecedenceLevel {
         TokenType::Minus => PrecedenceLevel::Sum,
         TokenType::Slash => PrecedenceLevel::Product,
         TokenType::Asterisk => PrecedenceLevel::Product,
+        TokenType::LParen => PrecedenceLevel::Call,
         _ => PrecedenceLevel::Lowest,
     };
 }
@@ -71,6 +73,7 @@ impl Parser {
         parser.register_infix(TokenType::NotEq, Self::parse_infix_expression);
         parser.register_infix(TokenType::Lt, Self::parse_infix_expression);
         parser.register_infix(TokenType::Gt, Self::parse_infix_expression);
+        parser.register_infix(TokenType::LParen, Self::parse_call_expression);
 
         // set cur and peek tokens
         parser.next_token();
@@ -433,6 +436,54 @@ impl Parser {
         }
 
         Some(identifiers)
+    }
+
+    // parse_call_expression
+    //
+    fn parse_call_expression(&mut self, function: Expression) -> Option<Expression> {
+        self.next_token();
+
+        let mut call_expr = CallExpression {
+            token: self.cur_token.clone(),
+            function: Box::new(function),
+            arguments: vec![],
+        };
+
+        call_expr.arguments = self
+            .parse_call_arguments()
+            .expect("error parsing arguments");
+
+        Some(Expression::Call(call_expr))
+    }
+
+    fn parse_call_arguments(&mut self) -> Option<Vec<Expression>> {
+        let mut args = vec![];
+
+        if self.peek_token_is(&TokenType::RParen) {
+            self.next_token();
+            return Some(args);
+        }
+
+        self.next_token();
+        args.push(
+            self.parse_expression(PrecedenceLevel::Lowest)
+                .expect("error parsing arguments"),
+        );
+
+        while self.peek_token_is(&TokenType::Comma) {
+            self.next_token();
+            self.next_token();
+            args.push(
+                self.parse_expression(PrecedenceLevel::Lowest)
+                    .expect("error parsing arguments"),
+            )
+        }
+
+        if !self.expect_peek(&TokenType::RParen) {
+            return None;
+        }
+
+        Some(args)
     }
 
     //
