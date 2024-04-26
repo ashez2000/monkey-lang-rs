@@ -1,10 +1,12 @@
 use std::io::{stdin, stdout, Write};
 
-use crate::ast::AstNode;
+use crate::evaluator::*;
 use crate::lexer::*;
 use crate::parser::*;
 
 pub fn start() {
+    let evaluator = Evaluator::new();
+
     loop {
         print!(">> ");
         stdout().flush().unwrap();
@@ -16,12 +18,14 @@ pub fn start() {
         let mut parser = Parser::new(lexer);
 
         let program = parser.parse_program().expect("error parsing program");
+        let evaluated = evaluator.eval_program(program);
+
         if parser.get_errors().len() != 0 {
             print_parse_errors(parser.get_errors());
             continue;
         }
 
-        println!("{}", program.to_string());
+        println!("{}", evaluated);
     }
 }
 
