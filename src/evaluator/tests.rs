@@ -69,6 +69,27 @@ fn test_bang_operator() {
     }
 }
 
+#[test]
+fn test_if_else_expression() {
+    let tests: Vec<(&str, Option<i64>)> = vec![
+        ("if (true) { 10 }", Some(10)),
+        ("if (false) { 10 }", None),
+        ("if (1) { 10 }", Some(10)),
+        ("if (1 < 2) { 10 }", Some(10)),
+        ("if (1 > 2) { 10 }", None),
+        ("if (1 > 2) { 10 } else { 20 }", Some(20)),
+        ("if (1 < 2) { 10 } else { 20 }", Some(10)),
+    ];
+
+    for test in tests {
+        let evaluated = test_eval(test.0);
+        match test.1 {
+            Some(i) => test_integer_object(evaluated, i),
+            None => test_null_object(evaluated),
+        }
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
@@ -96,5 +117,12 @@ fn test_boolean_object(obj: Object, expected: bool) {
             bool, expected
         ),
         other => panic!("object is not bool. got={}", other),
+    }
+}
+
+fn test_null_object(obj: Object) {
+    match obj {
+        Object::Null => assert!(true),
+        _ => assert!(false),
     }
 }
