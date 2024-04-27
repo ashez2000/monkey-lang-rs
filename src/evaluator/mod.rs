@@ -40,6 +40,11 @@ impl Evaluator {
                     let e = self.eval_expression(Some(*prefix_expr.expr));
                     return Self::eval_prefix_expression(prefix_expr.operator, e);
                 }
+                Expression::Infix(infix_exp) => {
+                    let left = self.eval_expression(Some(*infix_exp.left));
+                    let right = self.eval_expression(Some(*infix_exp.right));
+                    return Self::eval_infix_expression(infix_exp.operator, &left, &right);
+                }
                 _ => Object::Null,
             };
         }
@@ -66,6 +71,36 @@ impl Evaluator {
     fn eval_minus_prefix_operator_expression(right: Object) -> Object {
         match right {
             Object::Integer(int) => Object::Integer(-int),
+            _ => NULL,
+        }
+    }
+
+    fn eval_infix_expression(operator: String, left: &Object, right: &Object) -> Object {
+        match (left, right, operator) {
+            (Object::Integer(left), Object::Integer(right), op) => {
+                Self::eval_integer_infix_expression(op, *left, *right)
+            }
+            (Object::Boolean(l), Object::Boolean(r), operator) => {
+                return match operator.as_str() {
+                    "==" => Self::native_bool_to_boolean_object(l == r),
+                    "!=" => Self::native_bool_to_boolean_object(l != r),
+                    _ => NULL,
+                };
+            }
+            _ => NULL,
+        }
+    }
+
+    fn eval_integer_infix_expression(operator: String, left: i64, right: i64) -> Object {
+        match operator.as_str() {
+            "+" => Object::Integer(left + right),
+            "-" => Object::Integer(left - right),
+            "*" => Object::Integer(left * right),
+            "/" => Object::Integer(left / right),
+            "<" => Self::native_bool_to_boolean_object(left < right),
+            ">" => Self::native_bool_to_boolean_object(left > right),
+            "==" => Self::native_bool_to_boolean_object(left == right),
+            "!=" => Self::native_bool_to_boolean_object(left != right),
             _ => NULL,
         }
     }
