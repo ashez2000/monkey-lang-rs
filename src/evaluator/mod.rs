@@ -19,6 +19,9 @@ impl Evaluator {
 
         for stmt in program.statements {
             result = self.eval_statement(stmt);
+            if let Object::Return(value) = result {
+                return *value;
+            }
         }
 
         result
@@ -27,6 +30,10 @@ impl Evaluator {
     fn eval_statement(&self, stmt: Statement) -> Object {
         match stmt {
             Statement::Expression(expr_stmt) => self.eval_expression(expr_stmt.expr),
+            Statement::Return(ret_stmt) => {
+                let value = self.eval_expression(ret_stmt.expr);
+                return Object::Return(Box::new(value));
+            }
             _ => Object::Null,
         }
     }
@@ -111,6 +118,9 @@ impl Evaluator {
 
         for stmt in block.statements {
             result = self.eval_statement(stmt);
+            if let Object::Return(_) = result {
+                return result;
+            }
         }
 
         result

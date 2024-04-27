@@ -4,6 +4,7 @@ use std::fmt::Display;
 pub enum Object {
     Integer(i64),
     Boolean(bool),
+    Return(Box<Object>),
     Null,
 }
 
@@ -12,6 +13,7 @@ impl Object {
         match self {
             Self::Integer(_) => String::from("INTEGER"),
             Self::Boolean(_) => String::from("BOOLEAN"),
+            Self::Return(_) => String::from("RETURN"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -22,6 +24,7 @@ impl Display for Object {
         match self {
             Self::Integer(int) => write!(f, "{}", int),
             Self::Boolean(bool) => write!(f, "{}", bool),
+            Self::Return(value) => write!(f, "{}", value),
             Self::Null => write!(f, "null"),
         }
     }
