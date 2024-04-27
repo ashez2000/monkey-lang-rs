@@ -36,10 +36,38 @@ impl Evaluator {
             return match expr {
                 Expression::Integer(i) => Object::Integer(i.value),
                 Expression::Boolean(b) => Object::Boolean(b.value),
+                Expression::Prefix(prefix_expr) => {
+                    let e = self.eval_expression(Some(*prefix_expr.expr));
+                    return Self::eval_prefix_expression(prefix_expr.operator, e);
+                }
                 _ => Object::Null,
             };
         }
         Object::Null
+    }
+
+    fn eval_prefix_expression(operator: String, right: Object) -> Object {
+        match operator.as_str() {
+            "!" => Self::eval_bang_operator_expression(right),
+            "-" => Self::eval_minus_prefix_operator_expression(right),
+            _ => NULL,
+        }
+    }
+
+    fn eval_bang_operator_expression(right: Object) -> Object {
+        match right {
+            Object::Boolean(true) => FALSE,
+            Object::Boolean(false) => TRUE,
+            Object::Null => TRUE,
+            _ => FALSE,
+        }
+    }
+
+    fn eval_minus_prefix_operator_expression(right: Object) -> Object {
+        match right {
+            Object::Integer(int) => Object::Integer(-int),
+            _ => NULL,
+        }
     }
 
     fn native_bool_to_boolean_object(bool: bool) -> Object {
