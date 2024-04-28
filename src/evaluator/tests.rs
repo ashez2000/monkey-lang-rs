@@ -114,6 +114,39 @@ fn test_return_statements() {
     }
 }
 
+#[test]
+fn test_error_handling() {
+    let tests = vec![
+        ("5 + true;", "type mismatch: INTEGER + BOOLEAN"),
+        ("5 + true; 5;", "type mismatch: INTEGER + BOOLEAN"),
+        ("-true", "unknown operator: -BOOLEAN"),
+        ("true + false;", "unknown operator: BOOLEAN + BOOLEAN"),
+        ("5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN"),
+        (
+            "if (10 > 1) { true + false; }",
+            "unknown operator: BOOLEAN + BOOLEAN",
+        ),
+        (
+            "if (10 > 1) {
+            if (10 > 1) {
+            return true + false;
+            }
+            return 1;
+            }
+            ",
+            "unknown operator: BOOLEAN + BOOLEAN",
+        ),
+    ];
+
+    for test in tests {
+        let evaluated = test_eval(test.0);
+        match evaluated {
+            Object::Error(err) => assert_eq!(err, test.1),
+            other => panic!("no error object returned. got={:?}", other),
+        }
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);

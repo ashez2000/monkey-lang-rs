@@ -5,6 +5,7 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Return(Box<Object>),
+    Error(String),
     Null,
 }
 
@@ -14,6 +15,7 @@ impl Object {
             Self::Integer(_) => String::from("INTEGER"),
             Self::Boolean(_) => String::from("BOOLEAN"),
             Self::Return(_) => String::from("RETURN"),
+            Self::Error(_) => String::from("ERROR"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -25,6 +27,7 @@ impl Display for Object {
             Self::Integer(int) => write!(f, "{}", int),
             Self::Boolean(bool) => write!(f, "{}", bool),
             Self::Return(value) => write!(f, "{}", value),
+            Self::Error(msg) => write!(f, "{}", msg),
             Self::Null => write!(f, "null"),
         }
     }
