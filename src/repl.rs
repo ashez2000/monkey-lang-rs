@@ -5,7 +5,7 @@ use crate::lexer::*;
 use crate::parser::*;
 
 pub fn start() {
-    let evaluator = Evaluator::new();
+    let mut evaluator = Evaluator::new();
 
     loop {
         print!(">> ");

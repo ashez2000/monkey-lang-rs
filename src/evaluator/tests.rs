@@ -147,11 +147,25 @@ fn test_error_handling() {
     }
 }
 
+#[test]
+fn test_let_statements() {
+    let tests = vec![
+        ("let a = 5; a;", 5),
+        ("let a = 5 * 5; a;", 25),
+        ("let a = 5; let b = a; b;", 5),
+        ("let a = 5; let b = a; let c = a + b + 5; c;", 15),
+    ];
+
+    for test in tests {
+        test_integer_object(test_eval(test.0), test.1);
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
     let program = parser.parse_program();
-    let evaluator = Evaluator::new();
+    let mut evaluator = Evaluator::new();
     evaluator.eval_program(program.unwrap())
 }
 

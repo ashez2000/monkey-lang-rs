@@ -7,14 +7,18 @@ const TRUE: Object = Object::Boolean(true);
 const FALSE: Object = Object::Boolean(false);
 const NULL: Object = Object::Null;
 
-pub struct Evaluator {}
+pub struct Evaluator {
+    env: Environment,
+}
 
 impl Evaluator {
-    pub fn new() -> Evaluator {
-        Evaluator {}
+    pub fn new() -> Self {
+        Self {
+            env: Environment::new(),
+        }
     }
 
-    pub fn eval_program(&self, program: Program) -> Object {
+    pub fn eval_program(&mut self, program: Program) -> Object {
         let mut result = Object::Null;
 
         for stmt in program.statements {
@@ -31,7 +35,7 @@ impl Evaluator {
         result
     }
 
-    fn eval_statement(&self, stmt: Statement) -> Object {
+    fn eval_statement(&mut self, stmt: Statement) -> Object {
         match stmt {
             Statement::Expression(expr_stmt) => self.eval_expression(expr_stmt.expr),
             Statement::Return(ret_stmt) => {
@@ -41,11 +45,19 @@ impl Evaluator {
                 }
                 return Object::Return(Box::new(value));
             }
+            Statement::Let(let_stmt) => {
+                let value = self.eval_expression(let_stmt.expr);
+                if Self::is_error(&value) {
+                    return value;
+                }
+
+                self.env.set(let_stmt.ident.name, value).unwrap()
+            }
             _ => Object::Null,
         }
     }
 
-    fn eval_expression(&self, expression: Option<Expression>) -> Object {
+    fn eval_expression(&mut self, expression: Option<Expression>) -> Object {
         if let Some(expr) = expression {
             return match expr {
                 Expression::Integer(i) => Object::Integer(i.value),
@@ -60,6 +72,7 @@ impl Evaluator {
                     return Self::eval_infix_expression(infix_exp.operator, &left, &right);
                 }
                 Expression::If(if_expr) => self.eval_if_expression(if_expr),
+                Expression::Ident(i) => self.eval_identifier(i),
                 _ => Object::Null,
             };
         }
@@ -143,7 +156,7 @@ impl Evaluator {
         }
     }
 
-    fn eval_block_statement(&self, block: BlockStatement) -> Object {
+    fn eval_block_statement(&mut self, block: BlockStatement) -> Object {
         let mut result = NULL;
 
         for stmt in block.statements {
@@ -160,7 +173,7 @@ impl Evaluator {
         result
     }
 
-    fn eval_if_expression(&self, exp: IfExpression) -> Object {
+    fn eval_if_expression(&mut self, exp: IfExpression) -> Object {
         let condition = self.eval_expression(Some(*exp.condition));
 
         return if Self::is_truthy(condition) {
@@ -170,6 +183,14 @@ impl Evaluator {
         } else {
             NULL
         };
+    }
+
+    fn eval_identifier(&self, identifier: Identifier) -> Object {
+        let value = self.env.get(identifier.name.clone());
+        match value {
+            Some(val) => val,
+            None => Object::Error(format!("identifier not found: {}", identifier.name)),
+        }
     }
 
     fn native_bool_to_boolean_object(bool: bool) -> Object {
