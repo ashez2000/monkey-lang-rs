@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
+use crate::ast::*;
+
 #[derive(Debug, Clone)]
 pub enum Object {
     Integer(i64),
     Boolean(bool),
     Return(Box<Object>),
     Error(String),
+    Fn(Function),
     Null,
 }
 
@@ -17,6 +20,7 @@ impl Object {
             Self::Boolean(_) => String::from("BOOLEAN"),
             Self::Return(_) => String::from("RETURN"),
             Self::Error(_) => String::from("ERROR"),
+            Self::Fn(_) => String::from("FUNCTION"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -29,12 +33,13 @@ impl Display for Object {
             Self::Boolean(bool) => write!(f, "{}", bool),
             Self::Return(value) => write!(f, "{}", value),
             Self::Error(msg) => write!(f, "{}", msg),
+            Self::Fn(func) => write!(f, "{}", func.to_string()),
             Self::Null => write!(f, "null"),
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Environment {
     pub store: HashMap<String, Object>,
 }
@@ -56,5 +61,32 @@ impl Environment {
     pub fn set(&mut self, name: String, value: Object) -> Option<Object> {
         self.store.insert(name.clone(), value);
         return self.get(name);
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Function {
+    pub parameters: Vec<Identifier>,
+    pub body: BlockStatement,
+    pub env: Environment,
+}
+
+impl Function {
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+        let mut params = vec![];
+
+        for p in &self.parameters {
+            params.push(p.to_string());
+        }
+
+        out.push_str("fn");
+        out.push_str("(");
+        out.push_str(params.join(", ").as_str());
+        out.push_str(") {\n");
+        out.push_str(self.body.to_string().as_str());
+        out.push_str("\n}");
+
+        out
     }
 }

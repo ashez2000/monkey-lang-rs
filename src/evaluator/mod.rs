@@ -73,6 +73,11 @@ impl Evaluator {
                 }
                 Expression::If(if_expr) => self.eval_if_expression(if_expr),
                 Expression::Ident(i) => self.eval_identifier(i),
+                Expression::Fn(fn_lit) => Object::Fn(Function {
+                    parameters: fn_lit.parameters,
+                    body: fn_lit.body,
+                    env: self.env.clone(),
+                }),
                 _ => Object::Null,
             };
         }

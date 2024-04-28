@@ -161,6 +161,36 @@ fn test_let_statements() {
     }
 }
 
+#[test]
+fn test_function_object() {
+    let input = "fn(x) { x + 2; }";
+    let evaluated = test_eval(input);
+
+    match evaluated {
+        Object::Fn(function) => {
+            assert_eq!(
+                function.parameters.len(),
+                1,
+                "function has wrong parameters length. got={}",
+                function.parameters.len()
+            );
+            assert_eq!(
+                function.parameters[0].to_string(),
+                "x",
+                "parameter is not `x`, got={}",
+                function.parameters[0].to_string()
+            );
+            assert_eq!(
+                function.body.to_string(),
+                "(x + 2)",
+                "body is not `(x + 2)`. got={}",
+                function.body.to_string()
+            );
+        }
+        other => panic!("object is not Function. got={:?}", other),
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);

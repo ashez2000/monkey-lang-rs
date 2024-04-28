@@ -1,5 +1,3 @@
-use std::default;
-
 use crate::token::*;
 
 // AstNode:
@@ -18,7 +16,7 @@ pub trait AstNode {
 
 // Statement:
 // statement types in Monkey Lang
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     Let(LetStatement),
     Return(ReturnStatement),
@@ -48,7 +46,7 @@ impl AstNode for Statement {
 
 // Expression:
 // expressions in Monkey Lang
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum Expression {
     #[default]
     None,
@@ -124,7 +122,7 @@ impl AstNode for Program {
 // LetStatement:
 // structure of a let statement
 // let <name> = <expr>;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LetStatement {
     pub token: Token, // Let token
     pub ident: Identifier,
@@ -156,7 +154,7 @@ impl AstNode for LetStatement {
 
 // ReturnStatement
 // return <expr>;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ReturnStatement {
     pub token: Token,
     pub expr: Option<Expression>,
@@ -187,7 +185,7 @@ impl AstNode for ReturnStatement {
 // ExpressionStatement:
 // expression as a statement
 // exx: 1 + 2 + foo;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExpressionStatement {
     // first token of expr
     // what is the need for this ???
@@ -210,7 +208,7 @@ impl AstNode for ExpressionStatement {
 }
 
 // BlockStatement:
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct BlockStatement {
     pub token: Token,
     pub statements: Vec<Statement>,
@@ -233,7 +231,7 @@ impl AstNode for BlockStatement {
 }
 
 // Identifier:
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub token: Token, // Ident token
     pub name: String,
@@ -250,7 +248,7 @@ impl AstNode for Identifier {
 }
 
 // IntegerLiteral:
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerLiteral {
     pub token: Token, // Int token
     pub value: i64,
@@ -269,7 +267,7 @@ impl AstNode for IntegerLiteral {
 // PrefixExpression:
 // <op><expr>;
 // ex: !foo, -100
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PrefixExpression {
     pub token: Token,
     pub operator: String, // TODO: narrow down type
@@ -296,7 +294,7 @@ impl AstNode for PrefixExpression {
 // InfixExpression:
 // <left><op><right>;
 // ex: !foo, -100
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InfixExpression {
     pub token: Token,
     pub operator: String, // TODO: narrow down type
@@ -325,7 +323,7 @@ impl AstNode for InfixExpression {
 }
 
 // BooleanLiteral:
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BooleanLiteral {
     pub token: Token, // True / False
     pub value: bool,
@@ -344,7 +342,7 @@ impl AstNode for BooleanLiteral {
 // IfExpression:
 // if (<expr>) <consequence_block>
 // if (<expr>) <consequence_block> else <alternative_block>
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct IfExpression {
     pub token: Token,
     pub condition: Box<Expression>,
@@ -376,7 +374,7 @@ impl AstNode for IfExpression {
 
 // FunctionLiteral:
 // fn <params> <body>
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct FunctionLiteral {
     pub token: Token,
     pub parameters: Vec<Identifier>,
@@ -409,7 +407,7 @@ impl AstNode for FunctionLiteral {
 // CallExpression:
 // <expr>(<args>);
 // ex: foo(1+1), fn (n) { return n + 1; } (1);
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CallExpression {
     pub token: Token,
     pub function: Box<Expression>,
