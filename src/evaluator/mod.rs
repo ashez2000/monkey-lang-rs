@@ -1,5 +1,7 @@
 mod tests;
 
+use std::ops::Deref;
+
 use crate::ast::*;
 use crate::object::*;
 
@@ -14,7 +16,7 @@ pub struct Evaluator {
 impl Evaluator {
     pub fn new() -> Self {
         Self {
-            env: Environment::new(),
+            env: Environment::new(None),
         }
     }
 
@@ -78,6 +80,19 @@ impl Evaluator {
                     body: fn_lit.body,
                     env: self.env.clone(),
                 }),
+                Expression::Call(call_expr) => {
+                    let function = self.eval_expression(Some(call_expr.function.deref().clone()));
+                    if Self::is_error(&function) {
+                        return function;
+                    }
+
+                    let args = self.eval_expressions(call_expr.arguments);
+                    if args.len() == 1 && Self::is_error(&args[0]) {
+                        return args[0].clone();
+                    }
+
+                    self.apply_function(function, args)
+                }
                 _ => Object::Null,
             };
         }
@@ -196,6 +211,51 @@ impl Evaluator {
             Some(val) => val,
             None => Object::Error(format!("identifier not found: {}", identifier.name)),
         }
+    }
+
+    fn eval_expressions(&mut self, expressions: Vec<Expression>) -> Vec<Object> {
+        let mut result = vec![];
+
+        for exp in expressions {
+            let evaluated = self.eval_expression(Some(exp));
+            if Self::is_error(&evaluated) {
+                return vec![evaluated];
+            }
+            result.push(evaluated);
+        }
+
+        result
+    }
+
+    fn unwrap_return_value(obj: Object) -> Object {
+        match obj {
+            Object::Return(ret) => *ret,
+            _ => obj,
+        }
+    }
+
+    fn apply_function(&mut self, func: Object, args: Vec<Object>) -> Object {
+        match func {
+            Object::Fn(function) => {
+                let old_env = self.env.clone();
+                let extended_env = self.extended_function_env(function.clone(), args);
+                self.env = extended_env;
+                let evaluated = self.eval_block_statement(function.body);
+                self.env = old_env;
+                return Self::unwrap_return_value(evaluated);
+            }
+            other => Object::Error(format!("not a function: {}", other.object_type())),
+        }
+    }
+
+    fn extended_function_env(&self, function: Function, args: Vec<Object>) -> Environment {
+        let mut env = Environment::new(Some(Box::new(function.env)));
+
+        for (idx, param) in function.parameters.into_iter().enumerate() {
+            env.set(param.name, args[idx].clone());
+        }
+
+        env
     }
 
     fn native_bool_to_boolean_object(bool: bool) -> Object {

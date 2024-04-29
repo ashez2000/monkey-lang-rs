@@ -42,19 +42,24 @@ impl Display for Object {
 #[derive(Debug, Clone)]
 pub struct Environment {
     pub store: HashMap<String, Object>,
+    pub outer: Option<Box<Environment>>,
 }
 
 impl Environment {
-    pub fn new() -> Self {
+    pub fn new(outer: Option<Box<Environment>>) -> Self {
         Self {
             store: HashMap::new(),
+            outer,
         }
     }
 
     pub fn get(&self, name: String) -> Option<Object> {
         match self.store.get(name.as_str()) {
             Some(obj) => Some(obj.clone()),
-            None => None,
+            None => match &self.outer {
+                Some(env) => env.get(name),
+                None => None,
+            },
         }
     }
 
