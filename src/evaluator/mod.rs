@@ -64,6 +64,7 @@ impl Evaluator {
             return match expr {
                 Expression::Integer(i) => Object::Integer(i.value),
                 Expression::Boolean(b) => Object::Boolean(b.value),
+                Expression::String(s) => Object::String(s.value),
                 Expression::Prefix(prefix_expr) => {
                     let e = self.eval_expression(Some(*prefix_expr.expr));
                     return Self::eval_prefix_expression(prefix_expr.operator, e);

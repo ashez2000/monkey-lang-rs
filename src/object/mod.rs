@@ -10,6 +10,7 @@ pub enum Object {
     Return(Box<Object>),
     Error(String),
     Fn(Function),
+    String(String),
     Null,
 }
 
@@ -18,6 +19,7 @@ impl Object {
         match self {
             Self::Integer(_) => String::from("INTEGER"),
             Self::Boolean(_) => String::from("BOOLEAN"),
+            Self::String(_) => String::from("STRING"),
             Self::Return(_) => String::from("RETURN"),
             Self::Error(_) => String::from("ERROR"),
             Self::Fn(_) => String::from("FUNCTION"),
@@ -31,6 +33,7 @@ impl Display for Object {
         match self {
             Self::Integer(int) => write!(f, "{}", int),
             Self::Boolean(bool) => write!(f, "{}", bool),
+            Self::String(s) => write!(f, "{}", s),
             Self::Return(value) => write!(f, "{}", value),
             Self::Error(msg) => write!(f, "{}", msg),
             Self::Fn(func) => write!(f, "{}", func.to_string()),

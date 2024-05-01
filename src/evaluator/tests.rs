@@ -207,6 +207,19 @@ fn test_function_application() {
     }
 }
 
+#[test]
+fn test_string_literal() {
+    let input = r#""Hello World!""#;
+    let evaluated = test_eval(input);
+
+    match evaluated {
+        Object::String(str) => {
+            assert_eq!(str, "Hello World!", "String has wrong value. got={}", str);
+        }
+        other => panic!("object is not string. got={:?}", other),
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
