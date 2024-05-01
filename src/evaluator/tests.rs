@@ -220,6 +220,21 @@ fn test_string_literal() {
     }
 }
 
+#[test]
+fn test_string_concatenation() {
+    let input = r#""Hello" + " " + "World!""#;
+    let evaluated = test_eval(input);
+
+    match evaluated {
+        Object::String(string) => assert_eq!(
+            string, "Hello World!",
+            "string has wrong value. got={}",
+            string
+        ),
+        other => panic!("object is not string literal. got={:?}", other),
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);

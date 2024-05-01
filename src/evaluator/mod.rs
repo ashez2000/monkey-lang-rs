@@ -154,6 +154,17 @@ impl Evaluator {
                     )),
                 };
             }
+            (Object::String(left_str), Object::String(right_str), operator) => {
+                return match operator.as_str() {
+                    "+" => Object::String(format!("{}{}", left_str, right_str)),
+                    _ => Object::Error(format!(
+                        "unknown operator: {} {} {}",
+                        left.object_type(),
+                        operator,
+                        right.object_type()
+                    )),
+                };
+            }
             (left, right, operator) => Object::Error(format!(
                 "unknown operator: {} {} {}",
                 left.object_type(),
