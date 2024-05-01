@@ -492,6 +492,32 @@ fn test_call_expression_parsing() {
     }
 }
 
+#[test]
+fn test_string_literal_expression() {
+    let input = r#""hello world""#;
+
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program();
+    check_parser_errors(&parser);
+
+    match &program.unwrap().statements[0] {
+        Statement::Expression(expr_stmt) => {
+            match &expr_stmt.expr.as_ref().expect("error parsing expression") {
+                Expression::String(str_literal) => {
+                    assert_eq!(
+                        str_literal.value, "hello world",
+                        "str_literal value not `hello world` got={}",
+                        str_literal.value
+                    );
+                }
+                other => panic!("not a string literal. got={:?}", other),
+            }
+        }
+        other => panic!("not an expression statement. got={:?}", other),
+    }
+}
+
 // #### test helpers ####
 
 fn test_integer_literal(expr: &Expression, value: i64) {

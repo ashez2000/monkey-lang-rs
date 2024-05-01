@@ -64,6 +64,7 @@ impl Parser {
         parser.register_prefix(TokenType::LParen, Self::parse_grouped_expression);
         parser.register_prefix(TokenType::If, Self::parse_if_expression);
         parser.register_prefix(TokenType::Function, Self::parse_function_literal);
+        parser.register_prefix(TokenType::String, Self::parse_string_literal);
 
         parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
@@ -271,6 +272,15 @@ impl Parser {
         Some(Expression::Boolean(BooleanLiteral {
             token: self.cur_token.clone(),
             value: self.cur_token_is(&TokenType::True),
+        }))
+    }
+
+    // parse string literal
+    //
+    fn parse_string_literal(&mut self) -> Option<Expression> {
+        Some(Expression::String(StringLiteral {
+            token: self.cur_token.clone(),
+            value: self.cur_token.literal.clone(),
         }))
     }
 

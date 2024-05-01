@@ -58,6 +58,7 @@ pub enum Expression {
     If(IfExpression),
     Fn(FunctionLiteral),
     Call(CallExpression),
+    String(StringLiteral),
 }
 
 impl AstNode for Expression {
@@ -71,6 +72,7 @@ impl AstNode for Expression {
             Self::If(i) => i.token.literal.clone(),
             Self::Fn(i) => i.token.literal.clone(),
             Self::Call(i) => i.token.literal.clone(),
+            Self::String(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -85,6 +87,7 @@ impl AstNode for Expression {
             Self::If(i) => i.to_string(),
             Self::Fn(i) => i.to_string(),
             Self::Call(i) => i.to_string(),
+            Self::String(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -433,5 +436,21 @@ impl AstNode for CallExpression {
         out.push_str(")");
 
         out
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StringLiteral {
+    pub token: Token,
+    pub value: String,
+}
+
+impl AstNode for StringLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        self.token_literal()
     }
 }
