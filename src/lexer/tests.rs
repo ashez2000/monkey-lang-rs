@@ -144,3 +144,24 @@ fn test_double_char_tokens() {
         assert_eq!(tok.literal, tt.literal);
     }
 }
+
+#[test]
+fn test_string_literals() {
+    let input = r#"
+        "@foobar"
+        "foo bar"
+    "#;
+
+    let tests = vec![
+        Token::new(TokenType::String, "@foobar".into()),
+        Token::new(TokenType::String, "foo bar".into()),
+    ];
+
+    let mut lexer = Lexer::new(input);
+
+    for tt in tests {
+        let tok = lexer.next_token();
+        assert_eq!(tok.ttype, tt.ttype);
+        assert_eq!(tok.literal, tt.literal);
+    }
+}

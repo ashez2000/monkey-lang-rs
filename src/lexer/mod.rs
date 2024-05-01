@@ -22,6 +22,7 @@ impl Lexer {
         self.skip_whitespace();
 
         let tok = match self.ch {
+            // Assign, Eq
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char();
@@ -31,6 +32,7 @@ impl Lexer {
                 }
             }
 
+            // Bang, NotEq
             '!' => {
                 if self.peek_char() == '=' {
                     self.read_char();
@@ -40,12 +42,18 @@ impl Lexer {
                 }
             }
 
+            // String
+            '"' => Token::new(TokenType::String, self.read_string()),
+
+            // Operators
             '+' => new_token(TokenType::Plus, self.ch),
             '-' => new_token(TokenType::Minus, self.ch),
             '*' => new_token(TokenType::Asterisk, self.ch),
             '/' => new_token(TokenType::Slash, self.ch),
             '<' => new_token(TokenType::Lt, self.ch),
             '>' => new_token(TokenType::Gt, self.ch),
+
+            // Delimiters
             ';' => new_token(TokenType::Semicolon, self.ch),
             '(' => new_token(TokenType::LParen, self.ch),
             ')' => new_token(TokenType::RParen, self.ch),
@@ -55,6 +63,7 @@ impl Lexer {
 
             '\0' => new_token(TokenType::Eof, self.ch),
 
+            // Int, Ident
             // TODO: pattern match
             _ => {
                 return if is_letter(self.ch) {
@@ -112,6 +121,15 @@ impl Lexer {
     fn read_number(&mut self) -> String {
         let position = self.position;
         while self.ch.is_numeric() {
+            self.read_char();
+        }
+        self.input[position..self.position].iter().collect()
+    }
+
+    fn read_string(&mut self) -> String {
+        self.read_char(); // skip (")
+        let position = self.position;
+        while self.ch != '"' && self.ch != '\0' {
             self.read_char();
         }
         self.input[position..self.position].iter().collect()
