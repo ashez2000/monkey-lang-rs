@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 
 use crate::ast::*;
+use crate::builtin::Builtin;
 
 #[derive(Debug, Clone)]
 pub enum Object {
@@ -11,6 +12,7 @@ pub enum Object {
     Error(String),
     Fn(Function),
     String(String),
+    Builtin(BuiltinFn),
     Null,
 }
 
@@ -23,6 +25,7 @@ impl Object {
             Self::Return(_) => String::from("RETURN"),
             Self::Error(_) => String::from("ERROR"),
             Self::Fn(_) => String::from("FUNCTION"),
+            Self::Builtin(_) => String::from("BUILTIN"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -37,6 +40,7 @@ impl Display for Object {
             Self::Return(value) => write!(f, "{}", value),
             Self::Error(msg) => write!(f, "{}", msg),
             Self::Fn(func) => write!(f, "{}", func.to_string()),
+            Self::Builtin(_) => write!(f, "builtin fn"),
             Self::Null => write!(f, "null"),
         }
     }
@@ -50,10 +54,10 @@ pub struct Environment {
 
 impl Environment {
     pub fn new(outer: Option<Box<Environment>>) -> Self {
-        Self {
-            store: HashMap::new(),
-            outer,
-        }
+        let mut store = HashMap::new();
+        Self::init_builtins(&mut store);
+
+        Self { store, outer }
     }
 
     pub fn get(&self, name: String) -> Option<Object> {
@@ -69,6 +73,14 @@ impl Environment {
     pub fn set(&mut self, name: String, value: Object) -> Option<Object> {
         self.store.insert(name.clone(), value);
         return self.get(name);
+    }
+
+    fn init_builtins(hashmap: &mut HashMap<String, Object>) {
+        let builtins_functions = Builtin;
+        let builtins = builtins_functions.all_builtins();
+        for (name, object) in builtins {
+            hashmap.insert(name, object);
+        }
     }
 }
 
@@ -98,3 +110,5 @@ impl Function {
         out
     }
 }
+
+pub type BuiltinFn = fn(Vec<Object>) -> Object;

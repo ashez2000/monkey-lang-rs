@@ -7,7 +7,7 @@ use crate::object::*;
 
 const TRUE: Object = Object::Boolean(true);
 const FALSE: Object = Object::Boolean(false);
-const NULL: Object = Object::Null;
+pub const NULL: Object = Object::Null;
 
 pub struct Evaluator {
     env: Environment,
@@ -256,6 +256,7 @@ impl Evaluator {
                 self.env = old_env;
                 return Self::unwrap_return_value(evaluated);
             }
+            Object::Builtin(b_fn) => b_fn(args),
             other => Object::Error(format!("not a function: {}", other.object_type())),
         }
     }

@@ -235,6 +235,43 @@ fn test_string_concatenation() {
     }
 }
 
+#[test]
+fn test_builtin_functions() {
+    use std::any::Any;
+
+    let tests: Vec<(&str, Box<dyn Any>)> = vec![
+        (r#"len("")"#, Box::new(0_i64)),
+        (r#"len("four")"#, Box::new(4_i64)),
+        (r#"len("hello world")"#, Box::new(11_i64)),
+        (
+            r#"len(1)"#,
+            Box::new(String::from("argument to 'len' not supported, got INTEGER")),
+        ),
+        (
+            r#"len("one", "two")"#,
+            Box::new(String::from("wrong number of arguments. got=2, want=1")),
+        ),
+    ];
+
+    for test in tests {
+        let evaluated = test_eval(test.0);
+        match test.1.downcast_ref::<i64>() {
+            Some(expected) => test_integer_object(evaluated, *expected),
+            None => match test.1.downcast_ref::<String>() {
+                Some(expected) => match evaluated {
+                    Object::Error(err) => assert_eq!(
+                        err, *expected,
+                        "wrong error message. expected={}, got={}",
+                        *expected, err
+                    ),
+                    other => panic!("object is not error. got={}", other),
+                },
+                None => panic!("should not happen"),
+            },
+        }
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
