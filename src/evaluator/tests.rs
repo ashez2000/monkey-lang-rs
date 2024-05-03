@@ -293,6 +293,38 @@ fn test_array_literals() {
     }
 }
 
+#[test]
+fn test_array_index_expressions() {
+    use std::any::Any;
+
+    let tests: Vec<(&str, Box<dyn Any>)> = vec![
+        ("[1, 2, 3][0]", Box::new(1_i64)),
+        ("[1, 2, 3][1]", Box::new(2_i64)),
+        ("[1, 2, 3][2]", Box::new(3_i64)),
+        ("let i = 0; [1][i];", Box::new(1_i64)),
+        ("[1, 2, 3][1 + 1];", Box::new(3_i64)),
+        ("let myArray = [1, 2, 3]; myArray[2];", Box::new(3_i64)),
+        (
+            "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];",
+            Box::new(6_i64),
+        ),
+        (
+            "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]",
+            Box::new(2_i64),
+        ),
+        ("[1, 2, 3][3]", Box::new(NULL)),
+        ("[1, 2, 3][-1]", Box::new(NULL)),
+    ];
+
+    for test in tests {
+        let evaluated = test_eval(test.0);
+        match test.1.downcast_ref::<i64>() {
+            Some(expected) => test_integer_object(evaluated, *expected),
+            None => test_null_object(evaluated),
+        }
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);

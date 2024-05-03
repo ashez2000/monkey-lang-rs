@@ -103,6 +103,20 @@ impl Evaluator {
                     Object::Array(elements)
                 }
 
+                Expression::Index(index_expr) => {
+                    let left = self.eval_expression(Some(*index_expr.left));
+                    if Self::is_error(&left) {
+                        return left;
+                    }
+
+                    let index = self.eval_expression(Some(*index_expr.index));
+                    if Self::is_error(&index) {
+                        return index;
+                    }
+
+                    self.eval_index_expression(left, index)
+                }
+
                 _ => Object::Null,
             };
         }
@@ -246,6 +260,31 @@ impl Evaluator {
         }
 
         result
+    }
+
+    fn eval_index_expression(&mut self, left: Object, index: Object) -> Object {
+        if left.object_type() == "ARRAY" && index.object_type() == "INTEGER" {
+            return Self::eval_array_index_expression(left, index);
+        }
+
+        Object::Error(format!(
+            "index operator not supported: {}",
+            left.object_type()
+        ))
+    }
+
+    fn eval_array_index_expression(array: Object, index: Object) -> Object {
+        if let Object::Array(arr) = array {
+            if let Object::Integer(idx) = index {
+                let max = (arr.len() - 1) as i64;
+
+                if idx < 0 || idx > max {
+                    return NULL;
+                }
+                return arr[(idx) as usize].clone();
+            }
+        }
+        NULL
     }
 
     fn unwrap_return_value(obj: Object) -> Object {
