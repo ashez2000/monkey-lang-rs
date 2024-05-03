@@ -59,6 +59,7 @@ pub enum Expression {
     Fn(FunctionLiteral),
     Call(CallExpression),
     String(StringLiteral),
+    Array(ArrayLiteral),
 }
 
 impl AstNode for Expression {
@@ -73,6 +74,7 @@ impl AstNode for Expression {
             Self::Fn(i) => i.token.literal.clone(),
             Self::Call(i) => i.token.literal.clone(),
             Self::String(i) => i.token.literal.clone(),
+            Self::Array(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -88,6 +90,7 @@ impl AstNode for Expression {
             Self::Fn(i) => i.to_string(),
             Self::Call(i) => i.to_string(),
             Self::String(i) => i.to_string(),
+            Self::Array(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -439,6 +442,7 @@ impl AstNode for CallExpression {
     }
 }
 
+// StringLiteral:
 #[derive(Debug, Clone)]
 pub struct StringLiteral {
     pub token: Token,
@@ -452,5 +456,33 @@ impl AstNode for StringLiteral {
 
     fn to_string(&self) -> String {
         self.token_literal()
+    }
+}
+
+// ArrayLiteral:
+#[derive(Debug, Clone)]
+pub struct ArrayLiteral {
+    pub token: Token, // LBracket
+    pub elements: Vec<Expression>,
+}
+
+impl AstNode for ArrayLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+        let mut elements = vec![];
+
+        for el in &self.elements {
+            elements.push(el.to_string());
+        }
+
+        out.push_str("[");
+        out.push_str(elements.join(", ").as_str());
+        out.push_str("]");
+
+        out
     }
 }

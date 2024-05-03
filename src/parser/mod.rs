@@ -65,6 +65,7 @@ impl Parser {
         parser.register_prefix(TokenType::If, Self::parse_if_expression);
         parser.register_prefix(TokenType::Function, Self::parse_function_literal);
         parser.register_prefix(TokenType::String, Self::parse_string_literal);
+        parser.register_prefix(TokenType::LBracket, Self::parse_array_literal);
 
         parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
@@ -462,16 +463,16 @@ impl Parser {
         };
 
         call_expr.arguments = self
-            .parse_call_arguments()
+            .parse_expression_list(&TokenType::RParen)
             .expect("error parsing arguments");
 
         Some(Expression::Call(call_expr))
     }
 
-    fn parse_call_arguments(&mut self) -> Option<Vec<Expression>> {
+    fn parse_expression_list(&mut self, end: &TokenType) -> Option<Vec<Expression>> {
         let mut args = vec![];
 
-        if self.peek_token_is(&TokenType::RParen) {
+        if self.peek_token_is(end) {
             self.next_token();
             return Some(args);
         }
@@ -491,11 +492,20 @@ impl Parser {
             )
         }
 
-        if !self.expect_peek(&TokenType::RParen) {
+        if !self.expect_peek(end) {
             return None;
         }
 
         Some(args)
+    }
+
+    // parse_array_literal
+    fn parse_array_literal(&mut self) -> Option<Expression> {
+        let array = ArrayLiteral {
+            token: self.cur_token.clone(),
+            elements: self.parse_expression_list(&TokenType::RBracket).unwrap(),
+        };
+        Some(Expression::Array(array))
     }
 
     //

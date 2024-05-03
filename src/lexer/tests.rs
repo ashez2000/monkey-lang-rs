@@ -4,7 +4,7 @@ use crate::token::*;
 #[test]
 fn test_single_char_tokens() {
     let input = r"
-        =+-!*/<>
+        =+-!*/<>[]
         ,;(){}
         &
     ";
@@ -19,6 +19,8 @@ fn test_single_char_tokens() {
         Token::new(TokenType::Slash, "/".into()),
         Token::new(TokenType::Lt, "<".into()),
         Token::new(TokenType::Gt, ">".into()),
+        Token::new(TokenType::LBracket, "[".into()),
+        Token::new(TokenType::RBracket, "]".into()),
         // delimiters
         Token::new(TokenType::Comma, ",".into()),
         Token::new(TokenType::Semicolon, ";".into()),

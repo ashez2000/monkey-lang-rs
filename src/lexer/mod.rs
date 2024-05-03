@@ -60,6 +60,8 @@ impl Lexer {
             ',' => new_token(TokenType::Comma, self.ch),
             '{' => new_token(TokenType::LBrace, self.ch),
             '}' => new_token(TokenType::RBrace, self.ch),
+            '[' => new_token(TokenType::LBracket, self.ch),
+            ']' => new_token(TokenType::RBracket, self.ch),
 
             '\0' => new_token(TokenType::Eof, self.ch),
 
