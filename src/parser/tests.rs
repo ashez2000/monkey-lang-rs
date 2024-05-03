@@ -558,6 +558,34 @@ fn test_parsing_array_literal() {
     }
 }
 
+#[test]
+fn test_parsing_index_expressions() {
+    let input = "myArray[1 + 1]";
+
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+    let program = parser.parse_program();
+    check_parser_errors(&parser);
+
+    match &program.unwrap().statements[0] {
+        Statement::Expression(exp_stmt) => {
+            match &exp_stmt.expr.as_ref().expect("error parsing expression") {
+                Expression::Index(index_exp) => {
+                    test_identifier(&index_exp.left, "myArray");
+                    test_infix_expression(
+                        &index_exp.index,
+                        Box::new(1_i64),
+                        String::from("+"),
+                        Box::new(1_i64),
+                    );
+                }
+                other => panic!("not an index expression. got={:?}", other),
+            }
+        }
+        other => panic!("not an expression statement. got={:?}", other),
+    }
+}
+
 // #### test helpers ####
 
 fn test_integer_literal(expr: &Expression, value: i64) {

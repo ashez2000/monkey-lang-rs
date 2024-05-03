@@ -60,6 +60,7 @@ pub enum Expression {
     Call(CallExpression),
     String(StringLiteral),
     Array(ArrayLiteral),
+    Index(IndexExpression),
 }
 
 impl AstNode for Expression {
@@ -75,6 +76,7 @@ impl AstNode for Expression {
             Self::Call(i) => i.token.literal.clone(),
             Self::String(i) => i.token.literal.clone(),
             Self::Array(i) => i.token.literal.clone(),
+            Self::Index(i) => i.token.literal.clone(),
             Self::None => "".into(),
         }
     }
@@ -91,6 +93,7 @@ impl AstNode for Expression {
             Self::Call(i) => i.to_string(),
             Self::String(i) => i.to_string(),
             Self::Array(i) => i.to_string(),
+            Self::Index(i) => i.to_string(),
             Self::None => "".into(),
         }
     }
@@ -482,6 +485,34 @@ impl AstNode for ArrayLiteral {
         out.push_str("[");
         out.push_str(elements.join(", ").as_str());
         out.push_str("]");
+
+        out
+    }
+}
+
+// IndexExpression
+// <expr>[<expr>];
+// ex: foo[1], [1, 2][1 - 1]
+#[derive(Debug, Clone)]
+pub struct IndexExpression {
+    pub token: Token, // LBracket
+    pub left: Box<Expression>,
+    pub index: Box<Expression>,
+}
+
+impl AstNode for IndexExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+
+        out.push_str("(");
+        out.push_str(self.left.to_string().as_str());
+        out.push_str("[");
+        out.push_str(self.index.to_string().as_str());
+        out.push_str("])");
 
         out
     }

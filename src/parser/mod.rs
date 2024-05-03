@@ -18,6 +18,7 @@ enum PrecedenceLevel {
     Product,
     Prefix,
     Call,
+    Index,
 }
 
 fn precedence_map(kind: &TokenType) -> PrecedenceLevel {
@@ -31,6 +32,7 @@ fn precedence_map(kind: &TokenType) -> PrecedenceLevel {
         TokenType::Slash => PrecedenceLevel::Product,
         TokenType::Asterisk => PrecedenceLevel::Product,
         TokenType::LParen => PrecedenceLevel::Call,
+        TokenType::LBracket => PrecedenceLevel::Index,
         _ => PrecedenceLevel::Lowest,
     };
 }
@@ -76,6 +78,7 @@ impl Parser {
         parser.register_infix(TokenType::Lt, Self::parse_infix_expression);
         parser.register_infix(TokenType::Gt, Self::parse_infix_expression);
         parser.register_infix(TokenType::LParen, Self::parse_call_expression);
+        parser.register_infix(TokenType::LBracket, Self::parse_index_expression);
 
         // set cur and peek tokens
         parser.next_token();
@@ -506,6 +509,29 @@ impl Parser {
             elements: self.parse_expression_list(&TokenType::RBracket).unwrap(),
         };
         Some(Expression::Array(array))
+    }
+
+    fn parse_index_expression(&mut self, left: Expression) -> Option<Expression> {
+        self.next_token();
+
+        let mut expr = IndexExpression {
+            token: self.cur_token.clone(),
+            left: Box::new(left),
+            index: Default::default(),
+        };
+
+        self.next_token();
+
+        expr.index = Box::new(
+            self.parse_expression(PrecedenceLevel::Lowest)
+                .expect("error parsing index expression"),
+        );
+
+        if !self.expect_peek(&TokenType::RBracket) {
+            return None;
+        }
+
+        Some(Expression::Index(expr))
     }
 
     //
