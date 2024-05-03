@@ -94,6 +94,15 @@ impl Evaluator {
 
                     self.apply_function(function, args)
                 }
+
+                Expression::Array(array_literal) => {
+                    let elements = self.eval_expressions(array_literal.elements);
+                    if elements.len() == 1 && Self::is_error(&elements[0]) {
+                        return elements[0].clone();
+                    }
+                    Object::Array(elements)
+                }
+
                 _ => Object::Null,
             };
         }

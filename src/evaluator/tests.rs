@@ -272,6 +272,27 @@ fn test_builtin_functions() {
     }
 }
 
+#[test]
+fn test_array_literals() {
+    let input = "[1, 2 * 2, 3 + 3]";
+    let evaluated = test_eval(input);
+
+    match evaluated {
+        Object::Array(elements) => {
+            assert_eq!(
+                elements.len(),
+                3,
+                "array has wrong num of elements. got={}",
+                elements.len()
+            );
+            test_integer_object(elements[0].clone(), 1);
+            test_integer_object(elements[1].clone(), 4);
+            test_integer_object(elements[2].clone(), 6);
+        }
+        other => panic!("object is not array, got={:?}", other),
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
