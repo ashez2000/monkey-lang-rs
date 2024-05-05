@@ -1,6 +1,4 @@
-mod tests;
-
-use crate::token::*;
+use crate::token::{lookup_ident, Token, TokenType};
 
 #[derive(Debug, Default)]
 pub struct Lexer {
@@ -26,9 +24,9 @@ impl Lexer {
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char();
-                    Token::new(TokenType::Eq, "==".to_string())
+                    Token::new(TokenType::Eq, "==")
                 } else {
-                    new_token(TokenType::Assign, self.ch)
+                    Token::new(TokenType::Assign, self.ch)
                 }
             }
 
@@ -36,9 +34,9 @@ impl Lexer {
             '!' => {
                 if self.peek_char() == '=' {
                     self.read_char();
-                    Token::new(TokenType::NotEq, "!=".to_string())
+                    Token::new(TokenType::NotEq, "!=")
                 } else {
-                    new_token(TokenType::Bang, self.ch)
+                    Token::new(TokenType::Bang, self.ch)
                 }
             }
 
@@ -46,24 +44,24 @@ impl Lexer {
             '"' => Token::new(TokenType::String, self.read_string()),
 
             // Operators
-            '+' => new_token(TokenType::Plus, self.ch),
-            '-' => new_token(TokenType::Minus, self.ch),
-            '*' => new_token(TokenType::Asterisk, self.ch),
-            '/' => new_token(TokenType::Slash, self.ch),
-            '<' => new_token(TokenType::Lt, self.ch),
-            '>' => new_token(TokenType::Gt, self.ch),
+            '+' => Token::new(TokenType::Plus, self.ch),
+            '-' => Token::new(TokenType::Minus, self.ch),
+            '*' => Token::new(TokenType::Asterisk, self.ch),
+            '/' => Token::new(TokenType::Slash, self.ch),
+            '<' => Token::new(TokenType::Lt, self.ch),
+            '>' => Token::new(TokenType::Gt, self.ch),
 
             // Delimiters
-            ';' => new_token(TokenType::Semicolon, self.ch),
-            '(' => new_token(TokenType::LParen, self.ch),
-            ')' => new_token(TokenType::RParen, self.ch),
-            ',' => new_token(TokenType::Comma, self.ch),
-            '{' => new_token(TokenType::LBrace, self.ch),
-            '}' => new_token(TokenType::RBrace, self.ch),
-            '[' => new_token(TokenType::LBracket, self.ch),
-            ']' => new_token(TokenType::RBracket, self.ch),
+            ';' => Token::new(TokenType::Semicolon, self.ch),
+            '(' => Token::new(TokenType::LParen, self.ch),
+            ')' => Token::new(TokenType::RParen, self.ch),
+            ',' => Token::new(TokenType::Comma, self.ch),
+            '{' => Token::new(TokenType::LBrace, self.ch),
+            '}' => Token::new(TokenType::RBrace, self.ch),
+            '[' => Token::new(TokenType::LBracket, self.ch),
+            ']' => Token::new(TokenType::RBracket, self.ch),
 
-            '\0' => new_token(TokenType::Eof, self.ch),
+            '\0' => Token::new(TokenType::Eof, self.ch),
 
             // Int, Ident
             // TODO: pattern match
@@ -78,7 +76,7 @@ impl Lexer {
                 } else {
                     let ch = self.ch;
                     self.read_char();
-                    new_token(TokenType::Illegal, ch)
+                    Token::new(TokenType::Illegal, ch)
                 }
             }
         };
@@ -136,10 +134,6 @@ impl Lexer {
         }
         self.input[position..self.position].iter().collect()
     }
-}
-
-fn new_token(tt: TokenType, c: char) -> Token {
-    Token::new(tt, c.to_string())
 }
 
 fn is_letter(ch: char) -> bool {
