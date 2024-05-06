@@ -21,26 +21,15 @@ fn test_let_statements() {
     let program = parser.parse_program();
     check_parser_errors(&parser);
 
+    let tests = vec!["let x = 5;", "let y = 10;", "let foobar = 838383;"];
+
     match program {
         None => panic!("expected Some(program), got None"),
         Some(program) => {
             assert_eq!(program.statements.len(), 3);
-
-            let tests = vec!["x", "y", "foobar"];
-            for (i, t) in tests.into_iter().enumerate() {
-                let stmt = &program.statements[i];
-                test_let_statement(stmt, t);
-            }
+            let res: Vec<_> = program.statements.iter().map(|s| s.to_string()).collect();
+            assert_eq!(res, tests);
         }
-    }
-}
-
-fn test_let_statement(stmt: &Statement, expected: &str) {
-    match stmt {
-        Statement::Let(let_stmt) => {
-            assert_eq!(let_stmt.ident.name, expected);
-        }
-        _ => panic!("expected Statement::Let"),
     }
 }
 

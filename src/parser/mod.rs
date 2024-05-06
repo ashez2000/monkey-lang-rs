@@ -113,17 +113,16 @@ impl Parser {
 
         self.next_token();
 
-        let let_stmt = LetStatement {
-            token: Token::new(TokenType::Let, "let".to_string()),
-            ident,
-            expr: self.parse_expression(Precedence::Lowest),
-        };
+        let let_stmt = Statement::Let(
+            ident.name.clone(),
+            self.parse_expression(Precedence::Lowest).unwrap(),
+        );
 
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
         }
 
-        Some(Statement::Let(let_stmt))
+        Some(let_stmt)
     }
 
     // parse_return_statement

@@ -47,13 +47,13 @@ impl Evaluator {
                 }
                 return Object::Return(Box::new(value));
             }
-            Statement::Let(let_stmt) => {
-                let value = self.eval_expression(let_stmt.expr);
+            Statement::Let(ident, expr) => {
+                let value = self.eval_expression(Some(expr));
                 if Self::is_error(&value) {
                     return value;
                 }
 
-                self.env.set(let_stmt.ident.name, value).unwrap()
+                self.env.set(ident, value).unwrap()
             }
             _ => Object::Null,
         }

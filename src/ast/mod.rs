@@ -1,5 +1,4 @@
 use crate::token::*;
-
 // AstNode:
 // base node interface of AST
 // every node of AST implements AstNode
@@ -18,7 +17,7 @@ pub trait AstNode {
 // statement types in Monkey Lang
 #[derive(Debug, Clone)]
 pub enum Statement {
-    Let(LetStatement),
+    Let(String, Expression),
     Return(ReturnStatement),
     Expression(ExpressionStatement),
     Block(BlockStatement),
@@ -27,7 +26,7 @@ pub enum Statement {
 impl AstNode for Statement {
     fn to_string(&self) -> String {
         match self {
-            Self::Let(let_stmt) => let_stmt.to_string(),
+            Self::Let(ident, expr) => format!("let {} = {};", ident, expr.to_string()),
             Self::Return(return_stmt) => return_stmt.to_string(),
             Self::Expression(expr_stmt) => expr_stmt.to_string(),
             Self::Block(block_stmt) => block_stmt.to_string(),
@@ -91,35 +90,6 @@ impl AstNode for Program {
         } else {
             "".into()
         }
-    }
-}
-
-// LetStatement:
-// structure of a let statement
-// let <name> = <expr>;
-#[derive(Debug, Clone)]
-pub struct LetStatement {
-    pub token: Token, // Let token
-    pub ident: Identifier,
-    pub expr: Option<Expression>,
-}
-
-impl AstNode for LetStatement {
-    fn to_string(&self) -> String {
-        let mut out = String::new();
-
-        out.push_str("let");
-        out.push_str(" ");
-        out.push_str(&self.ident.to_string());
-        out.push_str(" = ");
-
-        if let Some(expr) = &self.expr {
-            out.push_str(&expr.to_string())
-        }
-
-        out.push_str(";");
-
-        out
     }
 }
 
