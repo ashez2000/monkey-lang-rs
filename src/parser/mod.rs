@@ -1,3 +1,4 @@
+mod precedence;
 mod tests;
 
 use std::collections::HashMap;
@@ -6,36 +7,10 @@ use crate::ast::*;
 use crate::lexer::*;
 use crate::token::*;
 
+use self::precedence::{token_to_precedence, Precedence};
+
 type PrefixParseFn = fn(parser: &mut Parser) -> Option<Expression>;
 type InfixParseFn = fn(parser: &mut Parser, exp: Expression) -> Option<Expression>;
-
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-enum PrecedenceLevel {
-    Lowest,
-    Equals,
-    LtGt,
-    Sum,
-    Product,
-    Prefix,
-    Call,
-    Index,
-}
-
-fn precedence_map(kind: &TokenType) -> PrecedenceLevel {
-    return match kind {
-        TokenType::Eq => PrecedenceLevel::Equals,
-        TokenType::NotEq => PrecedenceLevel::Equals,
-        TokenType::Lt => PrecedenceLevel::LtGt,
-        TokenType::Gt => PrecedenceLevel::LtGt,
-        TokenType::Plus => PrecedenceLevel::Sum,
-        TokenType::Minus => PrecedenceLevel::Sum,
-        TokenType::Slash => PrecedenceLevel::Product,
-        TokenType::Asterisk => PrecedenceLevel::Product,
-        TokenType::LParen => PrecedenceLevel::Call,
-        TokenType::LBracket => PrecedenceLevel::Index,
-        _ => PrecedenceLevel::Lowest,
-    };
-}
 
 pub struct Parser {
     lexer: Lexer,
@@ -141,7 +116,7 @@ impl Parser {
         let let_stmt = LetStatement {
             token: Token::new(TokenType::Let, "let".to_string()),
             ident,
-            expr: self.parse_expression(PrecedenceLevel::Lowest),
+            expr: self.parse_expression(Precedence::Lowest),
         };
 
         if self.peek_token_is(&TokenType::Semicolon) {
@@ -161,7 +136,7 @@ impl Parser {
 
         self.next_token();
 
-        return_stmt.expr = self.parse_expression(PrecedenceLevel::Lowest);
+        return_stmt.expr = self.parse_expression(Precedence::Lowest);
 
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
@@ -178,7 +153,7 @@ impl Parser {
             expr: None,
         };
 
-        expr_stmt.expr = self.parse_expression(PrecedenceLevel::Lowest);
+        expr_stmt.expr = self.parse_expression(Precedence::Lowest);
 
         // optional semicolon check (usecase for repl)
         if self.peek_token_is(&TokenType::Semicolon) {
@@ -216,7 +191,7 @@ impl Parser {
     //
 
     // main expression parser
-    fn parse_expression(&mut self, precedence: PrecedenceLevel) -> Option<Expression> {
+    fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
         let prefix = self.prefix_parse_fns.get(&self.cur_token.ttype);
 
         if let Some(prefix_fn) = prefix {
@@ -299,7 +274,7 @@ impl Parser {
 
         self.next_token();
 
-        prefix_expr.expr = match self.parse_expression(PrecedenceLevel::Prefix) {
+        prefix_expr.expr = match self.parse_expression(Precedence::Prefix) {
             Some(expr) => Box::new(expr),
             None => return None,
         };
@@ -335,7 +310,7 @@ impl Parser {
     fn parse_grouped_expression(&mut self) -> Option<Expression> {
         self.next_token();
 
-        let expr = self.parse_expression(PrecedenceLevel::Lowest);
+        let expr = self.parse_expression(Precedence::Lowest);
 
         if !self.expect_peek(&TokenType::RParen) {
             return None;
@@ -362,7 +337,7 @@ impl Parser {
 
         // TODO: refactor to Result
         if_expr.condition = Box::new(
-            self.parse_expression(PrecedenceLevel::Lowest)
+            self.parse_expression(Precedence::Lowest)
                 .expect("error parsing condition"),
         );
 
@@ -482,7 +457,7 @@ impl Parser {
 
         self.next_token();
         args.push(
-            self.parse_expression(PrecedenceLevel::Lowest)
+            self.parse_expression(Precedence::Lowest)
                 .expect("error parsing arguments"),
         );
 
@@ -490,7 +465,7 @@ impl Parser {
             self.next_token();
             self.next_token();
             args.push(
-                self.parse_expression(PrecedenceLevel::Lowest)
+                self.parse_expression(Precedence::Lowest)
                     .expect("error parsing arguments"),
             )
         }
@@ -523,7 +498,7 @@ impl Parser {
         self.next_token();
 
         expr.index = Box::new(
-            self.parse_expression(PrecedenceLevel::Lowest)
+            self.parse_expression(Precedence::Lowest)
                 .expect("error parsing index expression"),
         );
 
@@ -577,11 +552,11 @@ impl Parser {
         self.errors.push(msg);
     }
 
-    fn peek_precedence(&self) -> PrecedenceLevel {
-        precedence_map(&self.peek_token.ttype)
+    fn peek_precedence(&self) -> Precedence {
+        token_to_precedence(&self.peek_token.ttype)
     }
 
-    fn cur_precedence(&self) -> PrecedenceLevel {
-        precedence_map(&self.cur_token.ttype)
+    fn cur_precedence(&self) -> Precedence {
+        token_to_precedence(&self.cur_token.ttype)
     }
 }
