@@ -447,7 +447,6 @@ fn test_function_parameter_parsing() {
 
                     for (idx, ident) in test.1.into_iter().enumerate() {
                         assert_eq!(fn_lit.parameters[idx].name, ident);
-                        assert_eq!(fn_lit.parameters[idx].token_literal(), ident);
                     }
                 }
                 _ => panic!("expected Expression::Fn"),
@@ -593,10 +592,7 @@ fn test_integer_literal(expr: &Expression, value: i64) {
         Expression::Integer(i) => {
             assert_eq!(i.value, value);
         }
-        other => panic!(
-            "expected Expression::Integer, got = {}",
-            other.token_literal()
-        ),
+        _ => panic!("expected Expression::Integer"),
     }
 }
 

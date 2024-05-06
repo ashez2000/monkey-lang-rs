@@ -7,7 +7,7 @@ use crate::token::*;
 pub trait AstNode {
     // literal value of token
     // used for debugging and testing
-    fn token_literal(&self) -> String;
+    // fn token_literal(&self) -> String;
 
     // string representation of AST struct
     // for testing and debugging
@@ -25,15 +25,6 @@ pub enum Statement {
 }
 
 impl AstNode for Statement {
-    fn token_literal(&self) -> String {
-        match self {
-            Self::Let(let_stmt) => let_stmt.token.literal.clone(),
-            Self::Return(return_stmt) => return_stmt.token.literal.clone(),
-            Self::Expression(expr_stmt) => expr_stmt.token.literal.clone(),
-            Self::Block(block_stmt) => block_stmt.token.literal.clone(),
-        }
-    }
-
     fn to_string(&self) -> String {
         match self {
             Self::Let(let_stmt) => let_stmt.to_string(),
@@ -64,23 +55,6 @@ pub enum Expression {
 }
 
 impl AstNode for Expression {
-    fn token_literal(&self) -> String {
-        match self {
-            Self::Ident(i) => i.token.literal.clone(),
-            Self::Integer(i) => i.token.literal.clone(),
-            Self::Prefix(i) => i.token.literal.clone(),
-            Self::Infix(i) => i.token.literal.clone(),
-            Self::Boolean(i) => i.token.literal.clone(),
-            Self::If(i) => i.token.literal.clone(),
-            Self::Fn(i) => i.token.literal.clone(),
-            Self::Call(i) => i.token.literal.clone(),
-            Self::String(i) => i.token.literal.clone(),
-            Self::Array(i) => i.token.literal.clone(),
-            Self::Index(i) => i.token.literal.clone(),
-            Self::None => "".into(),
-        }
-    }
-
     fn to_string(&self) -> String {
         match self {
             Self::Ident(i) => i.to_string(),
@@ -107,14 +81,6 @@ pub struct Program {
 }
 
 impl AstNode for Program {
-    fn token_literal(&self) -> String {
-        if self.statements.len() > 0 {
-            self.statements[0].token_literal()
-        } else {
-            "".into()
-        }
-    }
-
     fn to_string(&self) -> String {
         if self.statements.len() > 0 {
             let mut out = String::new();
@@ -139,14 +105,10 @@ pub struct LetStatement {
 }
 
 impl AstNode for LetStatement {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::new();
 
-        out.push_str(&self.token_literal());
+        out.push_str("let");
         out.push_str(" ");
         out.push_str(&self.ident.to_string());
         out.push_str(" = ");
@@ -170,15 +132,11 @@ pub struct ReturnStatement {
 }
 
 impl AstNode for ReturnStatement {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     // TODO: to_string for expr
     fn to_string(&self) -> String {
         let mut out = String::new();
 
-        out.push_str(&self.token_literal());
+        out.push_str("return");
         out.push_str(" ");
 
         if let Some(expr) = &self.expr {
@@ -203,10 +161,6 @@ pub struct ExpressionStatement {
 }
 
 impl AstNode for ExpressionStatement {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         if let Some(expression) = &self.expr {
             expression.to_string()
@@ -224,10 +178,6 @@ pub struct BlockStatement {
 }
 
 impl AstNode for BlockStatement {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::from("");
 
@@ -247,10 +197,6 @@ pub struct Identifier {
 }
 
 impl AstNode for Identifier {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         self.name.clone()
     }
@@ -264,10 +210,6 @@ pub struct IntegerLiteral {
 }
 
 impl AstNode for IntegerLiteral {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         self.value.to_string()
     }
@@ -284,10 +226,6 @@ pub struct PrefixExpression {
 }
 
 impl AstNode for PrefixExpression {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::new();
 
@@ -312,10 +250,6 @@ pub struct InfixExpression {
 }
 
 impl AstNode for InfixExpression {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::new();
 
@@ -339,10 +273,6 @@ pub struct BooleanLiteral {
 }
 
 impl AstNode for BooleanLiteral {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         self.value.to_string()
     }
@@ -360,10 +290,6 @@ pub struct IfExpression {
 }
 
 impl AstNode for IfExpression {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::from("");
 
@@ -391,10 +317,6 @@ pub struct FunctionLiteral {
 }
 
 impl AstNode for FunctionLiteral {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::from("");
         let mut params = vec![];
@@ -403,7 +325,7 @@ impl AstNode for FunctionLiteral {
             params.push(param.to_string());
         }
 
-        out.push_str(self.token_literal().as_str());
+        out.push_str("fn");
         out.push_str("(");
         out.push_str(params.join(", ").as_str());
         out.push_str(")");
@@ -424,10 +346,6 @@ pub struct CallExpression {
 }
 
 impl AstNode for CallExpression {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::from("");
         let mut args = vec![];
@@ -453,12 +371,8 @@ pub struct StringLiteral {
 }
 
 impl AstNode for StringLiteral {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
-        self.token_literal()
+        self.value.clone()
     }
 }
 
@@ -470,10 +384,6 @@ pub struct ArrayLiteral {
 }
 
 impl AstNode for ArrayLiteral {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::from("");
         let mut elements = vec![];
@@ -501,10 +411,6 @@ pub struct IndexExpression {
 }
 
 impl AstNode for IndexExpression {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
     fn to_string(&self) -> String {
         let mut out = String::from("");
 
