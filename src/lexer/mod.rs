@@ -17,7 +17,12 @@ impl Lexer {
     }
 
     pub fn next_token(&mut self) -> Token {
-        self.skip_whitespace();
+        while self.ch.is_ascii_whitespace() || self.ch == '#' {
+            if self.ch == '#' {
+                self.skip_comment();
+            }
+            self.skip_whitespace();
+        }
 
         let tok = match self.ch {
             // Assign, Eq
@@ -77,7 +82,7 @@ impl Lexer {
                     let ch = self.ch;
                     self.read_char();
                     Token::new(TokenType::Illegal, ch)
-                }
+                };
             }
         };
 
@@ -106,6 +111,12 @@ impl Lexer {
 
     fn skip_whitespace(&mut self) {
         while self.ch.is_ascii_whitespace() {
+            self.read_char();
+        }
+    }
+
+    fn skip_comment(&mut self) {
+        while self.ch != '\n' {
             self.read_char();
         }
     }
@@ -255,8 +266,8 @@ mod tests {
 
         for (i, tt) in tests.iter().enumerate() {
             let tok = lexer.next_token();
-            assert_eq!(tok.ttype, tt.0, "tests[{}]", i);
-            assert_eq!(tok.literal, tt.1, "tests[{}]", i);
+            assert_eq!(tok.ttype, tt.0, "tests[{}] {:?}", i, tok);
+            assert_eq!(tok.literal, tt.1, "tests[{}] {:?}", i, tok);
         }
     }
 }
