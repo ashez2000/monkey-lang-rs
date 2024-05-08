@@ -1,4 +1,6 @@
 mod precedence;
+
+#[cfg(test)]
 mod tests;
 
 use std::collections::HashMap;

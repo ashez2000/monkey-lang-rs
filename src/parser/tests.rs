@@ -2,7 +2,6 @@ use std::any::Any;
 
 use crate::ast::*;
 use crate::lexer::*;
-use crate::token::*;
 
 use super::*;
 
@@ -54,7 +53,7 @@ fn test_return_statements() {
             assert_eq!(program.statements.len(), 3);
 
             let tests = vec!["x", "y", "foobar"];
-            for (i, t) in tests.into_iter().enumerate() {
+            for (i, _) in tests.into_iter().enumerate() {
                 let stmt = &program.statements[i];
                 match stmt {
                     Statement::Return(return_stmt) => {
