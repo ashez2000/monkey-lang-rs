@@ -9,8 +9,9 @@ mod token;
 
 use std::env;
 use std::fs;
+use std::panic;
 
-fn main() {
+fn foo() {
     let args: Vec<_> = env::args().collect();
 
     match args.len() {
@@ -39,5 +40,15 @@ fn print_parse_errors(errors: &Vec<String>) {
     println!("ERROR:");
     for e in errors {
         println!("\t-> {}", e);
+    }
+}
+
+fn main() {
+    if panic::catch_unwind(|| {
+        foo();
+    })
+    .is_err()
+    {
+        println!("ERROR: parser error");
     }
 }
