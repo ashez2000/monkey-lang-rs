@@ -88,7 +88,7 @@ fn test_identifier_expression() {
                 Statement::Expression(expr_stmt) => match &expr_stmt.expr {
                     Some(expr) => match expr {
                         Expression::Ident(i) => {
-                            assert_eq!(i.name, "foobar")
+                            assert_eq!(i.0, "foobar")
                         }
                         _ => panic!("expected Expression::Ident"),
                     },
@@ -383,16 +383,14 @@ fn test_function_literal_parsing() {
                 assert_eq!(fn_lit.parameters.len(), 2);
 
                 match &fn_lit.parameters[0] {
-                    Identifier { token, name } => {
+                    Identifier(name) => {
                         assert_eq!(name, "x");
-                        assert_eq!(token.literal, "x");
                     }
                 }
 
                 match &fn_lit.parameters[1] {
-                    Identifier { token, name } => {
+                    Identifier(name) => {
                         assert_eq!(name, "y");
-                        assert_eq!(token.literal, "y");
                     }
                 }
 
@@ -434,7 +432,7 @@ fn test_function_parameter_parsing() {
                     assert_eq!(fn_lit.parameters.len(), test.1.len());
 
                     for (idx, ident) in test.1.into_iter().enumerate() {
-                        assert_eq!(fn_lit.parameters[idx].name, ident);
+                        assert_eq!(fn_lit.parameters[idx].0, ident);
                     }
                 }
                 _ => panic!("expected Expression::Fn"),
@@ -587,7 +585,7 @@ fn test_integer_literal(expr: &Expression, value: i64) {
 fn test_identifier(expr: &Expression, value: &str) {
     match expr {
         Expression::Ident(i) => {
-            assert_eq!(i.name, value);
+            assert_eq!(i.0, value);
         }
         _ => panic!("expected Expression::Ident"),
     }

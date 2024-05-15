@@ -17,7 +17,7 @@ pub trait AstNode {
 // statement types in Monkey Lang
 #[derive(Debug, Clone)]
 pub enum Statement {
-    Let(String, Expression),
+    Let(Identifier, Expression),
     Return(ReturnStatement),
     Expression(ExpressionStatement),
     Block(BlockStatement),
@@ -26,7 +26,7 @@ pub enum Statement {
 impl AstNode for Statement {
     fn to_string(&self) -> String {
         match self {
-            Self::Let(ident, expr) => format!("let {} = {};", ident, expr.to_string()),
+            Self::Let(ident, expr) => format!("let {} = {};", ident.to_string(), expr.to_string()),
             Self::Return(return_stmt) => return_stmt.to_string(),
             Self::Expression(expr_stmt) => expr_stmt.to_string(),
             Self::Block(block_stmt) => block_stmt.to_string(),
@@ -159,16 +159,13 @@ impl AstNode for BlockStatement {
     }
 }
 
-// Identifier:
-#[derive(Debug, Clone)]
-pub struct Identifier {
-    pub token: Token, // Ident token
-    pub name: String,
-}
+// Identifier Ast
+#[derive(Debug, Clone, PartialEq)]
+pub struct Identifier(pub String);
 
 impl AstNode for Identifier {
     fn to_string(&self) -> String {
-        self.name.clone()
+        self.0.clone()
     }
 }
 

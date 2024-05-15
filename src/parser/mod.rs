@@ -104,10 +104,7 @@ impl Parser {
             return None;
         }
 
-        let ident = Identifier {
-            token: self.cur_token.clone(),
-            name: self.cur_token.literal.clone(),
-        };
+        let ident = Identifier(self.cur_token.literal.clone());
 
         if !self.expect_peek(&TokenType::Assign) {
             return None;
@@ -115,10 +112,7 @@ impl Parser {
 
         self.next_token();
 
-        let let_stmt = Statement::Let(
-            ident.name.clone(),
-            self.parse_expression(Precedence::Lowest).unwrap(),
-        );
+        let let_stmt = Statement::Let(ident, self.parse_expression(Precedence::Lowest).unwrap());
 
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
@@ -217,11 +211,7 @@ impl Parser {
     // parse_identifier
     //
     fn parse_identifier(&mut self) -> Option<Expression> {
-        let ident = Identifier {
-            token: self.cur_token.clone(),
-            name: self.cur_token.literal.clone(),
-        };
-
+        let ident = Identifier(self.cur_token.literal.clone());
         Some(Expression::Ident(ident))
     }
 
@@ -404,21 +394,14 @@ impl Parser {
 
         self.next_token();
 
-        let ident = Identifier {
-            token: self.cur_token.clone(),
-            name: self.cur_token.literal.clone(),
-        };
-
+        let ident = Identifier(self.cur_token.literal.clone());
         identifiers.push(ident);
 
         while self.peek_token_is(&TokenType::Comma) {
             self.next_token();
             self.next_token();
 
-            let ident = Identifier {
-                token: self.cur_token.clone(),
-                name: self.cur_token.literal.clone(),
-            };
+            let ident = Identifier(self.cur_token.literal.clone());
 
             identifiers.push(ident);
         }
