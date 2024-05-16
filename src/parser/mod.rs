@@ -181,42 +181,40 @@ impl Parser {
         block
     }
 
-    //
-    // #### expressions ####
-    //
-
-    // main expression parser
+    // PARSE: expression
     fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
         let prefix = self.prefix_parse_fns.get(&self.cur_token.ttype);
 
+        // Pratt Parser Logic
         if let Some(prefix_fn) = prefix {
-            let mut left_expr = prefix_fn(self);
+            // TODO: handle None case with error message
+            let mut left_expr = prefix_fn(self); // Null Denotation
 
-            // ????
             while !self.peek_token_is(&TokenType::Semicolon) && precedence < self.peek_precedence()
             {
                 let infix = self.infix_parse_fns.get(&self.peek_token.ttype);
                 if let Some(infix_fn) = infix {
-                    left_expr = infix_fn(self, left_expr.unwrap());
+                    // Parse for peek_token
+                    // self.next_token(); TODO: borrow issue, calling in child fn
+                    left_expr = infix_fn(self, left_expr.unwrap()); // Left Denotation
                 }
             }
+
             return left_expr;
         }
 
-        // TODO: figure out clone issue
         self.no_prefix_parse_fn_error(&self.cur_token.ttype.clone());
+
         None
     }
 
-    // parse_identifier
-    //
+    // PARSE: identifier
     fn parse_identifier(&mut self) -> Option<Expression> {
         let ident = Identifier(self.cur_token.literal.clone());
         Some(Expression::Ident(ident))
     }
 
-    // parse_integer_literal
-    //
+    // PARSE: integer
     fn parse_integer_literal(&mut self) -> Option<Expression> {
         let mut literal = IntegerLiteral {
             token: self.cur_token.clone(),
@@ -236,8 +234,7 @@ impl Parser {
         }
     }
 
-    // parse_boolean
-    //
+    // PARSE: boolean
     fn parse_boolean(&mut self) -> Option<Expression> {
         Some(Expression::Boolean(BooleanLiteral {
             token: self.cur_token.clone(),
@@ -245,8 +242,7 @@ impl Parser {
         }))
     }
 
-    // parse string literal
-    //
+    // PARSE: string
     fn parse_string_literal(&mut self) -> Option<Expression> {
         Some(Expression::String(StringLiteral {
             token: self.cur_token.clone(),
@@ -254,8 +250,7 @@ impl Parser {
         }))
     }
 
-    // parse prefix expression
-    //
+    // PARSE: prefix expression
     fn parse_prefix_expression(&mut self) -> Option<Expression> {
         let mut prefix_expr = PrefixExpression {
             token: self.cur_token.clone(),
@@ -273,13 +268,12 @@ impl Parser {
         Some(Expression::Prefix(prefix_expr))
     }
 
-    // parse infix expression
-    //
+    // PARSE: infix expression
     fn parse_infix_expression(&mut self, left: Expression) -> Option<Expression> {
-        self.next_token(); // ???
+        self.next_token(); // Get to operator, (borrow issue to caller)
 
         let mut infix_expr = InfixExpression {
-            token: self.cur_token.clone(),
+            token: self.cur_token.clone(), // Infix operator
             operator: self.cur_token.literal.clone(),
             left: Box::new(left),
             right: Default::default(),
@@ -296,13 +290,13 @@ impl Parser {
         Some(Expression::Infix(infix_expr))
     }
 
-    // parse_grouped_expression
-    //
+    // PARSE: grouped expression
     fn parse_grouped_expression(&mut self) -> Option<Expression> {
         self.next_token();
 
         let expr = self.parse_expression(Precedence::Lowest);
 
+        // TODO: add error message
         if !self.expect_peek(&TokenType::RParen) {
             return None;
         }
@@ -310,8 +304,7 @@ impl Parser {
         expr
     }
 
-    // parse_if_expression
-    //
+    // PARSE: if expression
     fn parse_if_expression(&mut self) -> Option<Expression> {
         let mut if_expr = IfExpression {
             token: self.cur_token.clone(),
@@ -326,7 +319,7 @@ impl Parser {
 
         self.next_token();
 
-        // TODO: refactor to Result
+        // TODO: handle error
         if_expr.condition = Box::new(
             self.parse_expression(Precedence::Lowest)
                 .expect("error parsing condition"),
@@ -355,8 +348,7 @@ impl Parser {
         Some(Expression::If(if_expr))
     }
 
-    // parse_function_literal
-    //
+    // PARSE: function literal
     fn parse_function_literal(&mut self) -> Option<Expression> {
         let mut fn_lit = FunctionLiteral {
             token: self.cur_token.clone(),
@@ -381,8 +373,7 @@ impl Parser {
         Some(Expression::Fn(fn_lit))
     }
 
-    // parse_function_paramenters
-    //
+    // PARSE: function parameters
     fn parse_function_parameters(&mut self) -> Option<Vec<Identifier>> {
         let mut identifiers = vec![];
 
@@ -413,8 +404,7 @@ impl Parser {
         Some(identifiers)
     }
 
-    // parse_call_expression
-    //
+    // PARSE: function call expression
     fn parse_call_expression(&mut self, function: Expression) -> Option<Expression> {
         self.next_token();
 
@@ -431,6 +421,7 @@ impl Parser {
         Some(Expression::Call(call_expr))
     }
 
+    // PARSE: expression list
     fn parse_expression_list(&mut self, end: &TokenType) -> Option<Vec<Expression>> {
         let mut args = vec![];
 
@@ -461,7 +452,7 @@ impl Parser {
         Some(args)
     }
 
-    // parse_array_literal
+    // PARSE: array literal
     fn parse_array_literal(&mut self) -> Option<Expression> {
         let array = ArrayLiteral {
             token: self.cur_token.clone(),
@@ -470,6 +461,7 @@ impl Parser {
         Some(Expression::Array(array))
     }
 
+    // PARSE: array index expression
     fn parse_index_expression(&mut self, left: Expression) -> Option<Expression> {
         self.next_token();
 
@@ -493,9 +485,7 @@ impl Parser {
         Some(Expression::Index(expr))
     }
 
-    //
-    // #### helpers ####
-    //
+    // HELPERS FUNCTIONS
 
     fn cur_token_is(&self, t: &TokenType) -> bool {
         self.cur_token.ttype == *t
