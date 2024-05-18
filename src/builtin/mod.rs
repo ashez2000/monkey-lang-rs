@@ -6,7 +6,7 @@ impl Builtin {
     pub fn all_builtins(&self) -> Vec<(String, Object)> {
         vec![
             (String::from("len"), Object::Builtin(b_len)),
-            (String::from("println"), Object::Builtin(b_println)),
+            (String::from("puts"), Object::Builtin(b_puts)),
         ]
     }
 }
@@ -30,7 +30,7 @@ fn b_len(args: Vec<Object>) -> Object {
     }
 }
 
-fn b_println(args: Vec<Object>) -> Object {
+fn b_puts(args: Vec<Object>) -> Object {
     for arg in args {
         println!("{}", arg);
     }
