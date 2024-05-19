@@ -57,13 +57,12 @@ impl Parser {
         parser.register_infix(TokenType::LParen, Self::parse_call_expression);
         parser.register_infix(TokenType::LBracket, Self::parse_index_expression);
 
-        // set cur and peek tokens
         parser.next_token();
         parser.next_token();
+
         parser
     }
 
-    // returns parsed AST of the program
     pub fn parse_program(&mut self) -> Option<Program> {
         let mut program = Program::default();
 
@@ -87,8 +86,7 @@ impl Parser {
         self.peek_token = self.lexer.next_token();
     }
 
-    // #### parse statements ####
-    //
+    // PARSE: statement (main)
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.ttype {
             TokenType::Let => self.parse_let_statement(),
@@ -97,13 +95,16 @@ impl Parser {
         }
     }
 
-    // parse_let_statement
-    //
+    // PARSE: let statement
     fn parse_let_statement(&mut self) -> Option<Statement> {
+        // let <ident> = <expr>;
+        // ^
+
         if !self.expect_peek(&TokenType::Ident) {
             return None;
         }
 
+        // TODO: refac to parse_ident
         let ident = Identifier(self.cur_token.literal.clone());
 
         if !self.expect_peek(&TokenType::Assign) {
@@ -112,7 +113,7 @@ impl Parser {
 
         self.next_token();
 
-        let let_stmt = Statement::Let(ident, self.parse_expression(Precedence::Lowest).unwrap());
+        let let_stmt = Statement::Let(ident, self.parse_expression(Precedence::Lowest)?);
 
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
@@ -121,9 +122,11 @@ impl Parser {
         Some(let_stmt)
     }
 
-    // parse_return_statement
-    //
+    // PARSE: return statement
     fn parse_return_statement(&mut self) -> Option<Statement> {
+        // return <expr>;
+        // ^
+
         let mut return_stmt = ReturnStatement {
             token: self.cur_token.clone(),
             expr: None,
@@ -140,27 +143,11 @@ impl Parser {
         Some(Statement::Return(return_stmt))
     }
 
-    // parse_expression_statement
-    //
-    fn parse_expression_statement(&mut self) -> Option<Statement> {
-        let mut expr_stmt = ExpressionStatement {
-            token: self.cur_token.clone(),
-            expr: None,
-        };
-
-        expr_stmt.expr = self.parse_expression(Precedence::Lowest);
-
-        // optional semicolon check (usecase for repl)
-        if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token()
-        }
-
-        Some(Statement::Expression(expr_stmt))
-    }
-
-    // parse_block_statement
-    //
+    // PARSE: block statement
     fn parse_block_statement(&mut self) -> BlockStatement {
+        // { <stmt> }
+        // ^
+
         let mut block = BlockStatement {
             token: self.cur_token.clone(),
             statements: vec![],
@@ -181,7 +168,24 @@ impl Parser {
         block
     }
 
-    // PARSE: expression
+    // PARSE: expression statement
+    fn parse_expression_statement(&mut self) -> Option<Statement> {
+        let mut expr_stmt = ExpressionStatement {
+            token: self.cur_token.clone(),
+            expr: None,
+        };
+
+        expr_stmt.expr = self.parse_expression(Precedence::Lowest);
+
+        // optional semicolon check (usecase for repl)
+        if self.peek_token_is(&TokenType::Semicolon) {
+            self.next_token()
+        }
+
+        Some(Statement::Expression(expr_stmt))
+    }
+
+    // PARSE: expression (main)
     fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
         let prefix = self.prefix_parse_fns.get(&self.cur_token.ttype);
 
@@ -252,6 +256,9 @@ impl Parser {
 
     // PARSE: prefix expression
     fn parse_prefix_expression(&mut self) -> Option<Expression> {
+        // <op> <expr>;
+        // ^
+
         let mut prefix_expr = PrefixExpression {
             token: self.cur_token.clone(),
             operator: self.cur_token.literal.clone(),
@@ -270,6 +277,9 @@ impl Parser {
 
     // PARSE: infix expression
     fn parse_infix_expression(&mut self, left: Expression) -> Option<Expression> {
+        // <expr> <op> <expr>;
+        // (left) ^
+
         self.next_token(); // Get to operator, (borrow issue to caller)
 
         let mut infix_expr = InfixExpression {
@@ -292,6 +302,9 @@ impl Parser {
 
     // PARSE: grouped expression
     fn parse_grouped_expression(&mut self) -> Option<Expression> {
+        // ( <expr> )
+        // ^
+
         self.next_token();
 
         let expr = self.parse_expression(Precedence::Lowest);
@@ -306,6 +319,9 @@ impl Parser {
 
     // PARSE: if expression
     fn parse_if_expression(&mut self) -> Option<Expression> {
+        // if ( <expr> ) { <block_stmt> } else { <block_stmt> }
+        // ^
+
         let mut if_expr = IfExpression {
             token: self.cur_token.clone(),
             alternative: None,
@@ -336,6 +352,9 @@ impl Parser {
         if_expr.consequence = self.parse_block_statement();
 
         if self.peek_token_is(&TokenType::Else) {
+            // } else { <block_stmt> }
+            // ^
+
             self.next_token();
 
             if !self.expect_peek(&TokenType::LBrace) {
@@ -350,6 +369,9 @@ impl Parser {
 
     // PARSE: function literal
     fn parse_function_literal(&mut self) -> Option<Expression> {
+        // fn ( <expr_list> ) { <block_stmt> }
+        // ^
+
         let mut fn_lit = FunctionLiteral {
             token: self.cur_token.clone(),
             body: Default::default(),
@@ -360,6 +382,7 @@ impl Parser {
             return None;
         }
 
+        // TODO: handle error
         fn_lit.parameters = self
             .parse_function_parameters()
             .expect("error parsing fn parameters");
@@ -406,6 +429,8 @@ impl Parser {
 
     // PARSE: function call expression
     fn parse_call_expression(&mut self, function: Expression) -> Option<Expression> {
+        // <expr> ( <expr_list> )
+        // ^
         self.next_token();
 
         let mut call_expr = CallExpression {
@@ -423,6 +448,9 @@ impl Parser {
 
     // PARSE: expression list
     fn parse_expression_list(&mut self, end: &TokenType) -> Option<Vec<Expression>> {
+        // <start_token> <expr_list> <end_token>
+        // ^
+
         let mut args = vec![];
 
         if self.peek_token_is(end) {
@@ -431,6 +459,7 @@ impl Parser {
         }
 
         self.next_token();
+
         args.push(
             self.parse_expression(Precedence::Lowest)
                 .expect("error parsing arguments"),
@@ -439,6 +468,7 @@ impl Parser {
         while self.peek_token_is(&TokenType::Comma) {
             self.next_token();
             self.next_token();
+
             args.push(
                 self.parse_expression(Precedence::Lowest)
                     .expect("error parsing arguments"),
