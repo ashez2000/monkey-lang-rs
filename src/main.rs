@@ -26,10 +26,12 @@ fn foo() {
             let mut parser = parser::Parser::new(lexer);
             let mut eval = evaluator::Evaluator::new();
             let program = parser.parse_program().expect("error parsing program");
-            eval.eval_program(program);
+            let _res = eval.eval_program(program);
             if parser.get_errors().len() != 0 {
                 print_parse_errors(parser.get_errors());
             }
+
+            // println!("{}", _res);
         }
 
         _ => panic!("Invalid args len"),

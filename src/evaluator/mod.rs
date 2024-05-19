@@ -311,7 +311,7 @@ impl Evaluator {
     }
 
     fn extended_function_env(&self, function: Function, args: Vec<Object>) -> Environment {
-        let mut env = Environment::new(Some(Box::new(function.env)));
+        let mut env = Environment::new(Some(Box::new(self.env.clone())));
 
         for (idx, param) in function.parameters.into_iter().enumerate() {
             env.set(param.0, args[idx].clone());
