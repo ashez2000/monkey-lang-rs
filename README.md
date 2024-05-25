@@ -22,7 +22,7 @@ A [Rust](https://www.rust-lang.org/) implementation of C-like language based on 
 1. Clone the source code:
 
 ```
-git clone https://github.com/wzid/monkey-rs.git
+git clone https://github.com/ashez2000/monkey-lang-rs
 ```
 
 2. Run with file or REPL mode
