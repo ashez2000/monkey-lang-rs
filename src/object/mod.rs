@@ -14,6 +14,7 @@ pub enum Object {
     String(String),
     Builtin(BuiltinFn),
     Array(Vec<Object>),
+    Quote(Ast),
     Null,
 }
 
@@ -28,6 +29,7 @@ impl Object {
             Self::Fn(_) => String::from("FUNCTION"),
             Self::Builtin(_) => String::from("BUILTIN"),
             Self::Array(_) => String::from("ARRAY"),
+            Self::Quote(_) => String::from("QUOTE"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -56,6 +58,10 @@ impl Display for Object {
                 out.push_str("]");
 
                 write!(f, "{}", out)
+            }
+
+            Self::Quote(ast) => {
+                write!(f, "QUOTE({})", ast.to_string())
             }
 
             Self::Null => write!(f, "null"),

@@ -13,6 +13,21 @@ pub trait AstNode {
     fn to_string(&self) -> String;
 }
 
+#[derive(Debug, Clone)]
+pub enum Ast {
+    Statement(Statement),
+    Expression(Expression),
+}
+
+impl AstNode for Ast {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Statement(stmt) => stmt.to_string(),
+            Self::Expression(expr) => expr.to_string(),
+        }
+    }
+}
+
 // Statement:
 // statement types in Monkey Lang
 #[derive(Debug, Clone)]
