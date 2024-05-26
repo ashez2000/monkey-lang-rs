@@ -325,10 +325,30 @@ fn test_array_index_expressions() {
     }
 }
 
+#[test]
+fn test_quote() {
+    let tests = vec![
+        ("quote(5 + 8)", "(5 + 8)"),
+        ("quote(foobar)", "foobar"),
+        ("quote(foobar + barfoo)", "(foobar + barfoo)"),
+    ];
+
+    for tt in tests {
+        let evaluated = test_eval(tt.0);
+        match evaluated {
+            Object::Quote(ast) => {
+                assert_eq!(ast.to_string(), tt.1);
+            }
+            _ => panic!("not quote"),
+        }
+    }
+}
+
 fn test_eval(input: &str) -> Object {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
     let program = parser.parse_program();
+    eprintln!("{:?}", parser.get_errors());
     let mut evaluator = Evaluator::new();
     evaluator.eval_program(program.unwrap())
 }
