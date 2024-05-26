@@ -1,15 +1,8 @@
-mod ast;
-mod builtin;
-mod evaluator;
-mod lexer;
-mod object;
-mod parser;
-mod repl;
-mod token;
-
 use std::env;
 use std::fs;
 use std::panic;
+
+use monkey::*;
 
 fn foo() {
     let args: Vec<_> = env::args().collect();
