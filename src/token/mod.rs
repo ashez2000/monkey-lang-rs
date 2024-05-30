@@ -44,13 +44,15 @@ pub enum TokenType {
 pub struct Token {
     pub ttype: TokenType,
     pub literal: String,
+    pub line: u32,
 }
 
 impl Token {
-    pub fn new<T: Into<String>>(ttype: TokenType, literal: T) -> Self {
+    pub fn new<T: Into<String>>(ttype: TokenType, literal: T, line: u32) -> Self {
         Self {
             ttype,
             literal: literal.into(),
+            line,
         }
     }
 }

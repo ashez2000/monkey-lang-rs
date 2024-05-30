@@ -6,12 +6,14 @@ pub struct Lexer {
     position: usize,
     read_position: usize,
     ch: char,
+    line: u32,
 }
 
 impl Lexer {
     pub fn new(input: &str) -> Self {
         let mut lexer = Self::default();
         lexer.input = input.chars().collect();
+        lexer.line = 1;
         lexer.read_char();
         lexer
     }
@@ -29,9 +31,9 @@ impl Lexer {
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char();
-                    Token::new(TokenType::Eq, "==")
+                    Token::new(TokenType::Eq, "==", self.line)
                 } else {
-                    Token::new(TokenType::Assign, self.ch)
+                    Token::new(TokenType::Assign, self.ch, self.line)
                 }
             }
 
@@ -39,34 +41,34 @@ impl Lexer {
             '!' => {
                 if self.peek_char() == '=' {
                     self.read_char();
-                    Token::new(TokenType::NotEq, "!=")
+                    Token::new(TokenType::NotEq, "!=", self.line)
                 } else {
-                    Token::new(TokenType::Bang, self.ch)
+                    Token::new(TokenType::Bang, self.ch, self.line)
                 }
             }
 
             // String
-            '"' => Token::new(TokenType::String, self.read_string()),
+            '"' => Token::new(TokenType::String, self.read_string(), self.line),
 
             // Operators
-            '+' => Token::new(TokenType::Plus, self.ch),
-            '-' => Token::new(TokenType::Minus, self.ch),
-            '*' => Token::new(TokenType::Asterisk, self.ch),
-            '/' => Token::new(TokenType::Slash, self.ch),
-            '<' => Token::new(TokenType::Lt, self.ch),
-            '>' => Token::new(TokenType::Gt, self.ch),
+            '+' => Token::new(TokenType::Plus, self.ch, self.line),
+            '-' => Token::new(TokenType::Minus, self.ch, self.line),
+            '*' => Token::new(TokenType::Asterisk, self.ch, self.line),
+            '/' => Token::new(TokenType::Slash, self.ch, self.line),
+            '<' => Token::new(TokenType::Lt, self.ch, self.line),
+            '>' => Token::new(TokenType::Gt, self.ch, self.line),
 
             // Delimiters
-            ';' => Token::new(TokenType::Semicolon, self.ch),
-            '(' => Token::new(TokenType::LParen, self.ch),
-            ')' => Token::new(TokenType::RParen, self.ch),
-            ',' => Token::new(TokenType::Comma, self.ch),
-            '{' => Token::new(TokenType::LBrace, self.ch),
-            '}' => Token::new(TokenType::RBrace, self.ch),
-            '[' => Token::new(TokenType::LBracket, self.ch),
-            ']' => Token::new(TokenType::RBracket, self.ch),
+            ';' => Token::new(TokenType::Semicolon, self.ch, self.line),
+            '(' => Token::new(TokenType::LParen, self.ch, self.line),
+            ')' => Token::new(TokenType::RParen, self.ch, self.line),
+            ',' => Token::new(TokenType::Comma, self.ch, self.line),
+            '{' => Token::new(TokenType::LBrace, self.ch, self.line),
+            '}' => Token::new(TokenType::RBrace, self.ch, self.line),
+            '[' => Token::new(TokenType::LBracket, self.ch, self.line),
+            ']' => Token::new(TokenType::RBracket, self.ch, self.line),
 
-            '\0' => Token::new(TokenType::Eof, self.ch),
+            '\0' => Token::new(TokenType::Eof, self.ch, self.line),
 
             // Int, Ident
             // TODO: pattern match
@@ -74,14 +76,14 @@ impl Lexer {
                 return if is_letter(self.ch) {
                     let literal = self.read_identifier();
                     let tt = lookup_ident(&literal);
-                    Token::new(tt, literal)
+                    Token::new(tt, literal, self.line)
                 } else if self.ch.is_numeric() {
                     let number = self.read_number();
-                    Token::new(TokenType::Int, number)
+                    Token::new(TokenType::Int, number, self.line)
                 } else {
                     let ch = self.ch;
                     self.read_char();
-                    Token::new(TokenType::Illegal, ch)
+                    Token::new(TokenType::Illegal, ch, self.line)
                 };
             }
         };
@@ -111,6 +113,9 @@ impl Lexer {
 
     fn skip_whitespace(&mut self) {
         while self.ch.is_ascii_whitespace() {
+            if self.ch == '\n' {
+                self.line += 1;
+            }
             self.read_char();
         }
     }
@@ -268,6 +273,7 @@ mod tests {
             let tok = lexer.next_token();
             assert_eq!(tok.ttype, tt.0, "tests[{}] {:?}", i, tok);
             assert_eq!(tok.literal, tt.1, "tests[{}] {:?}", i, tok);
+            println!("[line {}] {:?}({:?})", tok.line, tok.ttype, tok.literal);
         }
     }
 }
