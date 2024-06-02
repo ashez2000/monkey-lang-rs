@@ -256,7 +256,7 @@ fn test_if_else_expression() {
 
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
-    let program = parser.parse_program().unwrap();
+    let program = parser.parse_program();
     check_parser_errors(&parser);
 
     assert_eq!(program.statements.len(), 1);
@@ -551,5 +551,5 @@ fn build_program(input: &str) -> Program {
     let program = parser.parse_program();
     check_parser_errors(&parser);
 
-    program.expect("Expected Some Program")
+    program
 }

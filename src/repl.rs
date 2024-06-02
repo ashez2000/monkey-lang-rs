@@ -17,7 +17,7 @@ pub fn start() {
         let lexer = Lexer::new(&buf);
         let mut parser = Parser::new(lexer);
 
-        let program = parser.parse_program().expect("error parsing program");
+        let program = parser.parse_program();
         let evaluated = evaluator.eval_program(program);
 
         if parser.get_errors().len() != 0 {

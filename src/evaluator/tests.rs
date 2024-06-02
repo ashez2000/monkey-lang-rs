@@ -350,7 +350,7 @@ fn test_eval(input: &str) -> Object {
     let program = parser.parse_program();
     eprintln!("{:?}", parser.get_errors());
     let mut evaluator = Evaluator::new();
-    evaluator.eval_program(program.unwrap())
+    evaluator.eval_program(program)
 }
 
 fn test_integer_object(obj: Object, expected: i64) {

@@ -63,7 +63,7 @@ impl Parser {
         parser
     }
 
-    pub fn parse_program(&mut self) -> Option<Program> {
+    pub fn parse_program(&mut self) -> Program {
         let mut program = Program::default();
 
         while !self.cur_token_is(&TokenType::Eof) {
@@ -74,7 +74,7 @@ impl Parser {
             self.next_token();
         }
 
-        Some(program)
+        program
     }
 
     pub fn get_errors(&self) -> &Vec<String> {
