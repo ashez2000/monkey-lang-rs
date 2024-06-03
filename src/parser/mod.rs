@@ -537,8 +537,8 @@ impl Parser {
 
     fn peek_error(&mut self, t: &TokenType) {
         let msg = format!(
-            "expected next token: {:?}, got {:?}",
-            t, self.cur_token.ttype
+            "[line {}] expected next token to be {:?}, got {:?}",
+            &self.cur_token.line, t, self.cur_token.ttype
         );
         self.errors.push(msg);
     }
@@ -552,7 +552,7 @@ impl Parser {
     }
 
     fn no_prefix_parse_fn_error(&mut self, t: &TokenType) {
-        let msg = format!("no prefix parse fn for {:?}", t);
+        let msg = format!("[line {}] no prefix parse fn for {:?}", self.cur_token.line, t);
         self.errors.push(msg);
     }
 
