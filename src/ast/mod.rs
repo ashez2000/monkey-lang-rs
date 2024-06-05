@@ -382,6 +382,29 @@ impl AstNode for ArrayLiteral {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct HashLiteral {
+    pub token: Token,
+    pub pairs: Vec<(Expression, Expression)>,
+}
+
+impl AstNode for HashLiteral {
+    fn to_string(&self) -> String {
+        let mut out = String::from("");
+        let mut pairs = vec![];
+
+        for (key, value) in &self.pairs {
+            pairs.push(format!("{}: {}", key.to_string(), value.to_string()))
+        }
+
+        out.push_str("{");
+        out.push_str(pairs.join(", ").as_str());
+        out.push_str("}");
+
+        out
+    }
+}
+
 // IndexExpression
 // <expr>[<expr>];
 // ex: foo[1], [1, 2][1 - 1]
