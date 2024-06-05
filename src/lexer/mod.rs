@@ -60,6 +60,7 @@ impl Lexer {
 
             // Delimiters
             ';' => Token::new(TokenType::Semicolon, self.ch, self.line),
+            ':' => Token::new(TokenType::Colon, self.ch, self.line),
             '(' => Token::new(TokenType::LParen, self.ch, self.line),
             ')' => Token::new(TokenType::RParen, self.ch, self.line),
             ',' => Token::new(TokenType::Comma, self.ch, self.line),
@@ -264,6 +265,13 @@ mod tests {
             (TokenType::Comma, ","),
             (TokenType::Int, "2"),
             (TokenType::RBracket, "]"),
+            (TokenType::Semicolon, ";"),
+            // {"foo": "bar"};
+            (TokenType::LBrace, "{"),
+            (TokenType::String, "foo"),
+            (TokenType::Colon, ":"),
+            (TokenType::String, "bar"),
+            (TokenType::RBrace, "}"),
             (TokenType::Semicolon, ";"),
             //
             (TokenType::Eof, "\0"),

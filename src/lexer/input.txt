@@ -25,3 +25,5 @@ else { return false; }
 "foo bar"
 
 [1, 2];
+
+{"foo": "bar"};
