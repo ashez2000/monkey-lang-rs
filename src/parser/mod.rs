@@ -45,6 +45,7 @@ impl Parser {
         parser.register_prefix(TokenType::Function, Self::parse_function_literal);
         parser.register_prefix(TokenType::String, Self::parse_string_literal);
         parser.register_prefix(TokenType::LBracket, Self::parse_array_literal);
+        parser.register_prefix(TokenType::LBrace, Self::parse_hash_literal);
 
         parser.register_infix(TokenType::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenType::Minus, Self::parse_infix_expression);
@@ -491,6 +492,41 @@ impl Parser {
         Some(Expression::Array(array))
     }
 
+    // PARSE: hash literal
+    fn parse_hash_literal(&mut self) -> Option<Expression> {
+        let mut hash_lit = HashLiteral {
+            token: self.cur_token.clone(),
+            pairs: Default::default(),
+        };
+
+        while !self.peek_token_is(&TokenType::RBrace) {
+            self.next_token();
+            // TODO: handle error message
+            let k = self.parse_expression(Precedence::Lowest)?;
+
+            if !self.expect_peek(&TokenType::Colon) {
+                return None;
+            }
+
+            self.next_token();
+
+            // TODO: handle error message
+            let v = self.parse_expression(Precedence::Lowest)?;
+
+            hash_lit.pairs.push((k, v));
+
+            if !self.peek_token_is(&TokenType::RBrace) && !self.expect_peek(&TokenType::Comma) {
+                return None;
+            }
+        }
+
+        if !self.expect_peek(&TokenType::RBrace) {
+            return None;
+        }
+
+        Some(Expression::Hash(hash_lit))
+    }
+
     // PARSE: array index expression
     fn parse_index_expression(&mut self, left: Expression) -> Option<Expression> {
         self.next_token();
@@ -552,7 +588,10 @@ impl Parser {
     }
 
     fn no_prefix_parse_fn_error(&mut self, t: &TokenType) {
-        let msg = format!("[line {}] no prefix parse fn for {:?}", self.cur_token.line, t);
+        let msg = format!(
+            "[line {}] no prefix parse fn for {:?}",
+            self.cur_token.line, t
+        );
         self.errors.push(msg);
     }
 

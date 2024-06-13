@@ -65,6 +65,7 @@ pub enum Expression {
     Call(CallExpression),
     String(StringLiteral),
     Array(ArrayLiteral),
+    Hash(HashLiteral),
     Index(IndexExpression),
 }
 
@@ -81,6 +82,7 @@ impl AstNode for Expression {
             Self::Call(i) => i.to_string(),
             Self::String(i) => i.to_string(),
             Self::Array(i) => i.to_string(),
+            Self::Hash(i) => i.to_string(),
             Self::Index(i) => i.to_string(),
             Self::None => "".into(),
         }
