@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests;
 
+use std::collections::HashMap;
 use std::ops::Deref;
 
 use crate::ast::*;
@@ -106,6 +107,33 @@ impl Evaluator {
                         return elements[0].clone();
                     }
                     Object::Array(elements)
+                }
+
+                Expression::Hash(hash) => {
+                    let mut pairs = HashMap::new();
+
+                    for (k, v) in hash.pairs {
+                        let key = self.eval_expression(Some(k));
+                        if Self::is_error(&key) {
+                            return key;
+                        }
+
+                        let hash_key = match key.hash_key() {
+                            Ok(hash) => hash,
+                            Err(err) => {
+                                return Object::Error(err.to_string());
+                            }
+                        };
+
+                        let value = self.eval_expression(Some(v));
+                        if Self::is_error(&value) {
+                            return value;
+                        }
+
+                        pairs.insert(hash_key, HashPair { key, value });
+                    }
+
+                    Object::Hash(HashStruct { pairs })
                 }
 
                 Expression::Index(index_expr) => {
@@ -272,6 +300,10 @@ impl Evaluator {
             return Self::eval_array_index_expression(left, index);
         }
 
+        if left.object_type() == "HASH" {
+            return Self::eval_hash_index_expression(left, index);
+        }
+
         Object::Error(format!(
             "index operator not supported: {}",
             left.object_type()
@@ -290,6 +322,29 @@ impl Evaluator {
             }
         }
         NULL
+    }
+
+    fn eval_hash_index_expression(hash: Object, index: Object) -> Object {
+        match hash {
+            Object::Hash(hash) => {
+                let key = match index.hash_key() {
+                    Ok(key) => key,
+                    Err(e) => {
+                        return Object::Error(format!("{}", e));
+                    }
+                };
+
+                let pair = match hash.pairs.get(&key) {
+                    Some(pair) => pair,
+                    None => {
+                        return NULL;
+                    }
+                };
+
+                return pair.value.clone();
+            }
+            _ => panic!("cannot happen"),
+        }
     }
 
     fn unwrap_return_value(obj: Object) -> Object {

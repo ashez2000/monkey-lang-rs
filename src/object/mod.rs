@@ -153,7 +153,7 @@ impl Function {
 
 pub type BuiltinFn = fn(Vec<Object>) -> Object;
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct HashKey {
     pub object_type: String,
     pub value: i64,
