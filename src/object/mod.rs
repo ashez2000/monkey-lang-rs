@@ -15,6 +15,7 @@ pub enum Object {
     Builtin(BuiltinFn),
     Array(Vec<Object>),
     Quote(Ast),
+    Hash(HashStruct),
     Null,
 }
 
@@ -30,6 +31,7 @@ impl Object {
             Self::Builtin(_) => String::from("BUILTIN"),
             Self::Array(_) => String::from("ARRAY"),
             Self::Quote(_) => String::from("QUOTE"),
+            Self::Hash(_) => String::from("HASH"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -62,6 +64,21 @@ impl Display for Object {
 
             Self::Quote(ast) => {
                 write!(f, "QUOTE({})", ast.to_string())
+            }
+
+            Self::Hash(hash) => {
+                let mut out = String::from("");
+                let mut pairs = vec![];
+
+                for (_, pair) in &hash.pairs {
+                    pairs.push(format!("{}: {}", pair.key, pair.value));
+                }
+
+                out.push_str("{");
+                out.push_str(pairs.join(", ").as_str());
+                out.push_str("}");
+
+                write!(f, "{}", out)
             }
 
             Self::Null => write!(f, "null"),
@@ -135,3 +152,53 @@ impl Function {
 }
 
 pub type BuiltinFn = fn(Vec<Object>) -> Object;
+
+#[derive(Debug, Clone, PartialEq, Hash)]
+pub struct HashKey {
+    pub object_type: String,
+    pub value: i64,
+}
+
+impl Object {
+    pub fn hash_key(&self) -> Result<HashKey, String> {
+        match &self {
+            Object::Boolean(bool) => {
+                let value = if *bool { 1 } else { 0 };
+                Ok(HashKey {
+                    object_type: self.object_type(),
+                    value,
+                })
+            }
+
+            Object::Integer(int) => Ok(HashKey {
+                object_type: self.object_type(),
+                value: *int,
+            }),
+
+            Object::String(string) => {
+                use std::hash::{DefaultHasher, Hash, Hasher};
+
+                let mut hasher = DefaultHasher::new();
+                string.hash(&mut hasher);
+
+                Ok(HashKey {
+                    object_type: self.object_type(),
+                    value: hasher.finish() as i64,
+                })
+            }
+
+            other => Err(format!("unusable as hash key: {}", other.object_type())),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct HashPair {
+    pub key: Object,
+    pub value: Object,
+}
+
+#[derive(Debug, Clone)]
+pub struct HashStruct {
+    pub pairs: HashMap<HashKey, HashPair>,
+}
