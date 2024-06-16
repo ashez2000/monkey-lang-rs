@@ -12,7 +12,7 @@ A [Rust](https://www.rust-lang.org/) implementation of C-like language based on 
 - Basic arithmetic for integer expressions
 - First class and higher-order functions, closures
 - Built-in utility functions
-- TODO: HashMap
+- HashMap
 - TODO: Macros
 
 ## Getting Started
