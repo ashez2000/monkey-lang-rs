@@ -337,10 +337,7 @@ impl Parser {
         self.next_token();
 
         // TODO: handle error
-        if_expr.condition = Box::new(
-            self.parse_expression(Precedence::Lowest)
-                .expect("error parsing condition"),
-        );
+        if_expr.condition = Box::new(self.parse_expression(Precedence::Lowest)?);
 
         if !self.expect_peek(&TokenType::RParen) {
             return None;
@@ -384,9 +381,7 @@ impl Parser {
         }
 
         // TODO: handle error
-        fn_lit.parameters = self
-            .parse_function_parameters()
-            .expect("error parsing fn parameters");
+        fn_lit.parameters = self.parse_function_parameters()?;
 
         if !self.expect_peek(&TokenType::LBrace) {
             return None;
@@ -440,9 +435,7 @@ impl Parser {
             arguments: vec![],
         };
 
-        call_expr.arguments = self
-            .parse_expression_list(&TokenType::RParen)
-            .expect("error parsing arguments");
+        call_expr.arguments = self.parse_expression_list(&TokenType::RParen)?;
 
         Some(Expression::Call(call_expr))
     }
@@ -461,19 +454,13 @@ impl Parser {
 
         self.next_token();
 
-        args.push(
-            self.parse_expression(Precedence::Lowest)
-                .expect("error parsing arguments"),
-        );
+        args.push(self.parse_expression(Precedence::Lowest)?);
 
         while self.peek_token_is(&TokenType::Comma) {
             self.next_token();
             self.next_token();
 
-            args.push(
-                self.parse_expression(Precedence::Lowest)
-                    .expect("error parsing arguments"),
-            )
+            args.push(self.parse_expression(Precedence::Lowest)?)
         }
 
         if !self.expect_peek(end) {
@@ -539,10 +526,7 @@ impl Parser {
 
         self.next_token();
 
-        expr.index = Box::new(
-            self.parse_expression(Precedence::Lowest)
-                .expect("error parsing index expression"),
-        );
+        expr.index = Box::new(self.parse_expression(Precedence::Lowest)?);
 
         if !self.expect_peek(&TokenType::RBracket) {
             return None;
