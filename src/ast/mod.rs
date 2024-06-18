@@ -1,4 +1,7 @@
 use crate::token::*;
+
+pub mod ast_printer;
+
 // AstNode:
 // base node interface of AST
 // every node of AST implements AstNode
