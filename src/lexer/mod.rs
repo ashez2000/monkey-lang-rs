@@ -273,6 +273,8 @@ mod tests {
             (TokenType::String, "bar"),
             (TokenType::RBrace, "}"),
             (TokenType::Semicolon, ";"),
+            // null
+            (TokenType::Null, "null"),
             //
             (TokenType::Eof, "\0"),
         ];

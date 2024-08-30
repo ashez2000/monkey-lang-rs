@@ -3,6 +3,7 @@ pub enum TokenType {
     #[default]
     Eof,
     Illegal,
+    Null,
 
     Ident,
     Int,
@@ -67,6 +68,7 @@ pub fn lookup_ident(ident: &str) -> TokenType {
         "if" => TokenType::If,
         "else" => TokenType::Else,
         "return" => TokenType::Return,
+        "null" => TokenType::Null,
 
         _ => TokenType::Ident,
     }
