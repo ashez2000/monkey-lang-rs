@@ -41,7 +41,8 @@ impl Evaluator {
 
     fn eval_statement(&mut self, stmt: Statement) -> Object {
         match stmt {
-            Statement::Expression(expr_stmt) => self.eval_expression(expr_stmt.expr),
+            Statement::Expression { expr, .. } => self.eval_expression(Some(expr)),
+
             Statement::Return { expr, .. } => {
                 let value = self.eval_expression(Some(expr));
                 if Self::is_error(&value) {
@@ -49,6 +50,7 @@ impl Evaluator {
                 }
                 return Object::Return(Box::new(value));
             }
+
             Statement::Let { ident, expr, .. } => {
                 let value = self.eval_expression(Some(expr));
                 if Self::is_error(&value) {
@@ -57,6 +59,7 @@ impl Evaluator {
 
                 self.env.set(ident.0, value).unwrap()
             }
+
             _ => Object::Null,
         }
     }

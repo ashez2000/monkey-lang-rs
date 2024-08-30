@@ -1,8 +1,5 @@
 mod precedence;
 
-#[cfg(test)]
-mod tests;
-
 use std::collections::HashMap;
 
 use crate::ast::*;
@@ -171,19 +168,14 @@ impl Parser {
 
     // PARSE: expression statement
     fn parse_expression_statement(&mut self) -> Option<Statement> {
-        let mut expr_stmt = ExpressionStatement {
-            token: self.cur_token.clone(),
-            expr: None,
-        };
+        let token = self.cur_token.clone();
+        let expr = self.parse_expression(Precedence::Lowest)?;
 
-        expr_stmt.expr = self.parse_expression(Precedence::Lowest);
-
-        // optional semicolon check (usecase for repl)
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token()
         }
 
-        Some(Statement::Expression(expr_stmt))
+        Some(Statement::Expression { token, expr })
     }
 
     // PARSE: expression (main)

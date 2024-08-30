@@ -1,4 +1,8 @@
 use crate::token::*;
+
+mod statement;
+pub use statement::Statement;
+
 // AstNode:
 // base node interface of AST
 // every node of AST implements AstNode
@@ -24,39 +28,6 @@ impl AstNode for Ast {
         match self {
             Self::Statement(stmt) => stmt.to_string(),
             Self::Expression(expr) => expr.to_string(),
-        }
-    }
-}
-
-// Statement:
-// statement types in Monkey Lang
-#[derive(Debug, Clone)]
-pub enum Statement {
-    Let {
-        token: Token,
-        ident: Identifier,
-        expr: Expression,
-    },
-
-    Return {
-        token: Token,
-        expr: Expression,
-    },
-
-    Expression(ExpressionStatement),
-    Block(BlockStatement),
-}
-
-impl AstNode for Statement {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Let { ident, expr, .. } => {
-                format!("let {} = {};", ident.to_string(), expr.to_string())
-            }
-
-            Self::Return { expr, .. } => expr.to_string(),
-            Self::Expression(expr_stmt) => expr_stmt.to_string(),
-            Self::Block(block_stmt) => block_stmt.to_string(),
         }
     }
 }
