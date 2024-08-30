@@ -32,7 +32,11 @@ impl AstNode for Ast {
 // statement types in Monkey Lang
 #[derive(Debug, Clone)]
 pub enum Statement {
-    Let(Identifier, Expression),
+    Let {
+        token: Token,
+        ident: Identifier,
+        expr: Expression,
+    },
     Return(ReturnStatement),
     Expression(ExpressionStatement),
     Block(BlockStatement),
@@ -41,7 +45,10 @@ pub enum Statement {
 impl AstNode for Statement {
     fn to_string(&self) -> String {
         match self {
-            Self::Let(ident, expr) => format!("let {} = {};", ident.to_string(), expr.to_string()),
+            Self::Let { ident, expr, .. } => {
+                format!("let {} = {};", ident.to_string(), expr.to_string())
+            }
+
             Self::Return(return_stmt) => return_stmt.to_string(),
             Self::Expression(expr_stmt) => expr_stmt.to_string(),
             Self::Block(block_stmt) => block_stmt.to_string(),

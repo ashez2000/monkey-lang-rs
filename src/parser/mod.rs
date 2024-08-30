@@ -100,6 +100,7 @@ impl Parser {
     fn parse_let_statement(&mut self) -> Option<Statement> {
         // let <ident> = <expr>;
         // ^
+        let let_tok = self.cur_token.clone();
 
         if !self.expect_peek(&TokenType::Ident) {
             return None;
@@ -114,7 +115,11 @@ impl Parser {
 
         self.next_token();
 
-        let let_stmt = Statement::Let(ident, self.parse_expression(Precedence::Lowest)?);
+        let let_stmt = Statement::Let {
+            token: let_tok,
+            ident,
+            expr: self.parse_expression(Precedence::Lowest)?,
+        };
 
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();

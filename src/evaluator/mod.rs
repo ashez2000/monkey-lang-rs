@@ -49,7 +49,7 @@ impl Evaluator {
                 }
                 return Object::Return(Box::new(value));
             }
-            Statement::Let(ident, expr) => {
+            Statement::Let { ident, expr, .. } => {
                 let value = self.eval_expression(Some(expr));
                 if Self::is_error(&value) {
                     return value;
