@@ -128,25 +128,20 @@ impl Parser {
         Some(let_stmt)
     }
 
-    // PARSE: return statement
+    // PARSE RETURN STATEMENT
+    // TODO: null expressions
+    // return <expr>;
     fn parse_return_statement(&mut self) -> Option<Statement> {
-        // return <expr>;
-        // ^
-
-        let mut return_stmt = ReturnStatement {
-            token: self.cur_token.clone(),
-            expr: None,
-        };
+        let token = self.cur_token.clone();
 
         self.next_token();
-
-        return_stmt.expr = self.parse_expression(Precedence::Lowest);
+        let expr = self.parse_expression(Precedence::Lowest)?;
 
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
         }
 
-        Some(Statement::Return(return_stmt))
+        Some(Statement::Return { token, expr })
     }
 
     // PARSE: block statement

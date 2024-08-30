@@ -37,7 +37,12 @@ pub enum Statement {
         ident: Identifier,
         expr: Expression,
     },
-    Return(ReturnStatement),
+
+    Return {
+        token: Token,
+        expr: Expression,
+    },
+
     Expression(ExpressionStatement),
     Block(BlockStatement),
 }
@@ -49,7 +54,7 @@ impl AstNode for Statement {
                 format!("let {} = {};", ident.to_string(), expr.to_string())
             }
 
-            Self::Return(return_stmt) => return_stmt.to_string(),
+            Self::Return { expr, .. } => expr.to_string(),
             Self::Expression(expr_stmt) => expr_stmt.to_string(),
             Self::Block(block_stmt) => block_stmt.to_string(),
         }

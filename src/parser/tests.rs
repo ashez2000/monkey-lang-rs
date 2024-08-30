@@ -40,8 +40,8 @@ fn test_return_statements() {
     for (i, _) in tests.into_iter().enumerate() {
         let stmt = &program.statements[i];
         match stmt {
-            Statement::Return(return_stmt) => {
-                assert_eq!(return_stmt.token.literal, "return")
+            Statement::Return { token, .. } => {
+                assert_eq!(token.literal, "return")
             }
             _ => panic!("expected Statement::Return"),
         }

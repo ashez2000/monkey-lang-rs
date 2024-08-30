@@ -42,8 +42,8 @@ impl Evaluator {
     fn eval_statement(&mut self, stmt: Statement) -> Object {
         match stmt {
             Statement::Expression(expr_stmt) => self.eval_expression(expr_stmt.expr),
-            Statement::Return(ret_stmt) => {
-                let value = self.eval_expression(ret_stmt.expr);
+            Statement::Return { expr, .. } => {
+                let value = self.eval_expression(Some(expr));
                 if Self::is_error(&value) {
                     return value;
                 }
