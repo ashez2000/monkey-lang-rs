@@ -14,7 +14,6 @@ pub enum Object {
     String(String),
     Builtin(BuiltinFn),
     Array(Vec<Object>),
-    Quote(Ast),
     Hash(HashStruct),
     Null,
 }
@@ -30,7 +29,6 @@ impl Object {
             Self::Fn(_) => String::from("FUNCTION"),
             Self::Builtin(_) => String::from("BUILTIN"),
             Self::Array(_) => String::from("ARRAY"),
-            Self::Quote(_) => String::from("QUOTE"),
             Self::Hash(_) => String::from("HASH"),
             Self::Null => String::from("NULL"),
         }
@@ -60,10 +58,6 @@ impl Display for Object {
                 out.push_str("]");
 
                 write!(f, "{}", out)
-            }
-
-            Self::Quote(ast) => {
-                write!(f, "QUOTE({})", ast.to_string())
             }
 
             Self::Hash(hash) => {
@@ -133,21 +127,7 @@ pub struct Function {
 
 impl Function {
     fn to_string(&self) -> String {
-        let mut out = String::from("");
-        let mut params = vec![];
-
-        for p in &self.parameters {
-            params.push(p.to_string());
-        }
-
-        out.push_str("fn");
-        out.push_str("(");
-        out.push_str(params.join(", ").as_str());
-        out.push_str(") {\n");
-        out.push_str(self.body.to_string().as_str());
-        out.push_str("\n}");
-
-        out
+        "Function".into()
     }
 }
 

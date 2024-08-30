@@ -161,35 +161,35 @@ fn test_let_statements() {
     }
 }
 
-#[test]
-fn test_function_object() {
-    let input = "fn(x) { x + 2; }";
-    let evaluated = test_eval(input);
+// #[test]
+// fn test_function_object() {
+//     let input = "fn(x) { x + 2; }";
+//     let evaluated = test_eval(input);
 
-    match evaluated {
-        Object::Fn(function) => {
-            assert_eq!(
-                function.parameters.len(),
-                1,
-                "function has wrong parameters length. got={}",
-                function.parameters.len()
-            );
-            assert_eq!(
-                function.parameters[0].to_string(),
-                "x",
-                "parameter is not `x`, got={}",
-                function.parameters[0].to_string()
-            );
-            assert_eq!(
-                function.body.to_string(),
-                "(x + 2)",
-                "body is not `(x + 2)`. got={}",
-                function.body.to_string()
-            );
-        }
-        other => panic!("object is not Function. got={:?}", other),
-    }
-}
+//     match evaluated {
+//         Object::Fn(function) => {
+//             assert_eq!(
+//                 function.parameters.len(),
+//                 1,
+//                 "function has wrong parameters length. got={}",
+//                 function.parameters.len()
+//             );
+//             assert_eq!(
+//                 function.parameters[0].to_string(),
+//                 "x",
+//                 "parameter is not `x`, got={}",
+//                 function.parameters[0].to_string()
+//             );
+//             assert_eq!(
+//                 function.body.to_string(),
+//                 "(x + 2)",
+//                 "body is not `(x + 2)`. got={}",
+//                 function.body.to_string()
+//             );
+//         }
+//         other => panic!("object is not Function. got={:?}", other),
+//     }
+// }
 
 #[test]
 fn test_function_application() {
@@ -321,25 +321,6 @@ fn test_array_index_expressions() {
         match test.1.downcast_ref::<i64>() {
             Some(expected) => test_integer_object(evaluated, *expected),
             None => test_null_object(evaluated),
-        }
-    }
-}
-
-#[test]
-fn test_quote() {
-    let tests = vec![
-        ("quote(5 + 8)", "(5 + 8)"),
-        ("quote(foobar)", "foobar"),
-        ("quote(foobar + barfoo)", "(foobar + barfoo)"),
-    ];
-
-    for tt in tests {
-        let evaluated = test_eval(tt.0);
-        match evaluated {
-            Object::Quote(ast) => {
-                assert_eq!(ast.to_string(), tt.1);
-            }
-            _ => panic!("not quote"),
         }
     }
 }

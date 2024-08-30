@@ -87,10 +87,6 @@ impl Evaluator {
                     env: self.env.clone(),
                 }),
                 Expression::Call(call_expr) => {
-                    if call_expr.function.to_string() == "quote" {
-                        return Object::Quote(Ast::Expression(call_expr.arguments[0].clone()));
-                    }
-
                     let function = self.eval_expression(Some(call_expr.function.deref().clone()));
                     if Self::is_error(&function) {
                         return function;
