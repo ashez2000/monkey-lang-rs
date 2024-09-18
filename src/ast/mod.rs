@@ -3,6 +3,9 @@ use crate::token::*;
 mod statement;
 pub use statement::Statement;
 
+mod expr;
+pub use expr::Expr;
+
 #[derive(Debug, Clone)]
 pub enum Ast {
     Statement(Statement),
