@@ -5,7 +5,7 @@ use crate::token::Token;
 pub enum Statement {
     Let {
         token: Token,
-        ident: Identifier,
+        ident: Ident,
         expr: Expression,
     },
 

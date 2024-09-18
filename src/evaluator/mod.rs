@@ -57,7 +57,7 @@ impl Evaluator {
                     return value;
                 }
 
-                self.env.set(ident.0, value).unwrap()
+                self.env.set(ident.0.literal, value).unwrap()
             }
 
             _ => Object::Null,
@@ -272,11 +272,12 @@ impl Evaluator {
         };
     }
 
-    fn eval_identifier(&self, identifier: Identifier) -> Object {
-        let value = self.env.get(identifier.0.clone());
+    fn eval_identifier(&self, ident: Ident) -> Object {
+        // TODO: remove clone
+        let value = self.env.get(ident.0.literal.clone());
         match value {
             Some(val) => val,
-            None => Object::Error(format!("identifier not found: {}", identifier.0)),
+            None => Object::Error(format!("identifier not found: {}", ident.0.literal)),
         }
     }
 
@@ -372,7 +373,7 @@ impl Evaluator {
         let mut env = Environment::new(Some(Box::new(self.env.clone())));
 
         for (idx, param) in function.parameters.into_iter().enumerate() {
-            env.set(param.0, args[idx].clone());
+            env.set(param.0.literal, args[idx].clone());
         }
 
         env

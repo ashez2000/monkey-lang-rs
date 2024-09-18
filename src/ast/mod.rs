@@ -15,7 +15,7 @@ pub enum Ast {
 pub enum Expression {
     #[default]
     None,
-    Ident(Identifier),
+    Ident(Ident),
     Integer(IntegerLiteral),
     Prefix(PrefixExpression),
     Infix(InfixExpression),
@@ -63,8 +63,8 @@ pub struct BlockStatement {
 }
 
 // Identifier Ast
-#[derive(Debug, Clone, PartialEq)]
-pub struct Identifier(pub String);
+#[derive(Debug, Clone)]
+pub struct Ident(pub Token);
 
 // IntegerLiteral:
 #[derive(Debug, Clone)]
@@ -116,7 +116,7 @@ pub struct IfExpression {
 #[derive(Debug, Default, Clone)]
 pub struct FunctionLiteral {
     pub token: Token,
-    pub parameters: Vec<Identifier>,
+    pub parameters: Vec<Ident>,
     pub body: BlockStatement,
 }
 

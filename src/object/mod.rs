@@ -120,7 +120,7 @@ impl Environment {
 
 #[derive(Debug, Clone)]
 pub struct Function {
-    pub parameters: Vec<Identifier>,
+    pub parameters: Vec<Ident>,
     pub body: BlockStatement,
     pub env: Environment,
 }

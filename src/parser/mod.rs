@@ -31,7 +31,7 @@ impl Parser {
             infix_parse_fns: HashMap::new(),
         };
 
-        parser.register_prefix(TokenType::Ident, Self::parse_identifier);
+        parser.register_prefix(TokenType::Ident, Self::parse_ident);
         parser.register_prefix(TokenType::Int, Self::parse_integer_literal);
         parser.register_prefix(TokenType::Bang, Self::parse_prefix_expression);
         parser.register_prefix(TokenType::Minus, Self::parse_prefix_expression);
@@ -103,8 +103,7 @@ impl Parser {
             return None;
         }
 
-        // TODO: refac to parse_ident
-        let ident = Identifier(self.cur_token.literal.clone());
+        let ident = Ident(self.cur_token.clone());
 
         if !self.expect_peek(&TokenType::Assign) {
             return None;
@@ -205,10 +204,8 @@ impl Parser {
         None
     }
 
-    // PARSE: identifier
-    fn parse_identifier(&mut self) -> Option<Expression> {
-        let ident = Identifier(self.cur_token.literal.clone());
-        Some(Expression::Ident(ident))
+    fn parse_ident(&mut self) -> Option<Expression> {
+        Some(Expression::Ident(Ident(self.cur_token.clone())))
     }
 
     // PARSE: integer
@@ -385,7 +382,7 @@ impl Parser {
     }
 
     // PARSE: function parameters
-    fn parse_function_parameters(&mut self) -> Option<Vec<Identifier>> {
+    fn parse_function_parameters(&mut self) -> Option<Vec<Ident>> {
         let mut identifiers = vec![];
 
         // zero fn params
@@ -396,14 +393,14 @@ impl Parser {
 
         self.next_token();
 
-        let ident = Identifier(self.cur_token.literal.clone());
+        let ident = Ident(self.cur_token.clone());
         identifiers.push(ident);
 
         while self.peek_token_is(&TokenType::Comma) {
             self.next_token();
             self.next_token();
 
-            let ident = Identifier(self.cur_token.literal.clone());
+            let ident = Ident(self.cur_token.clone());
 
             identifiers.push(ident);
         }
