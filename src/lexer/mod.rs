@@ -69,24 +69,24 @@ impl Lexer {
             '[' => Token::new(TokenType::LBracket, self.ch, self.line),
             ']' => Token::new(TokenType::RBracket, self.ch, self.line),
 
+            // keywords & identifiers
+            '_' | 'a'..='z' | 'A'..='Z' => {
+                let literal = self.read_identifier();
+                let tt = lookup_ident(&literal);
+                return Token::new(tt, literal, self.line);
+            }
+
+            // integers
+            '0'..='9' => {
+                let number = self.read_number();
+                return Token::new(TokenType::Int, number, self.line);
+            }
+
+            // EOF
             '\0' => Token::new(TokenType::Eof, self.ch, self.line),
 
-            // Int, Ident
-            // TODO: pattern match
-            _ => {
-                return if is_letter(self.ch) {
-                    let literal = self.read_identifier();
-                    let tt = lookup_ident(&literal);
-                    Token::new(tt, literal, self.line)
-                } else if self.ch.is_numeric() {
-                    let number = self.read_number();
-                    Token::new(TokenType::Int, number, self.line)
-                } else {
-                    let ch = self.ch;
-                    self.read_char();
-                    Token::new(TokenType::Illegal, ch, self.line)
-                };
-            }
+            // illegal char
+            _ => Token::new(TokenType::Illegal, self.ch, self.line),
         };
 
         self.read_char();
