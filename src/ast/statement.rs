@@ -14,6 +14,11 @@ pub enum Statement {
         expr: Expression,
     },
 
+    Print {
+        token: Token,
+        expr: Expression,
+    },
+
     Expression {
         token: Token,
         expr: Expression,

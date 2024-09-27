@@ -89,6 +89,7 @@ impl Parser {
         match self.cur_token.ttype {
             TokenType::Let => self.parse_let_statement(),
             TokenType::Return => self.parse_return_statement(),
+            TokenType::Print => self.parse_print_statement(),
             _ => self.parse_expression_statement(),
         }
     }
@@ -163,6 +164,19 @@ impl Parser {
         }
 
         block
+    }
+
+    fn parse_print_statement(&mut self) -> Option<Statement> {
+        let tok = self.cur_token.clone();
+        self.next_token();
+
+        let expr = self.parse_expression(Precedence::Lowest)?;
+
+        if self.peek_token_is(&TokenType::Semicolon) {
+            self.next_token();
+        }
+
+        Some(Statement::Print { token: tok, expr })
     }
 
     // PARSE: expression statement

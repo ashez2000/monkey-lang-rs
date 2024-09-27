@@ -60,6 +60,12 @@ impl Evaluator {
                 self.env.set(ident.0.literal, value).unwrap()
             }
 
+            Statement::Print { expr, .. } => {
+                let expr = self.eval_expression(Some(expr));
+                println!("{}", expr);
+                Object::Null
+            }
+
             _ => Object::Null,
         }
     }

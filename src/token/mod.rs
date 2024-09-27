@@ -40,6 +40,7 @@ pub enum TokenType {
     If,
     Else,
     Return,
+    Print,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -68,6 +69,7 @@ pub fn lookup_ident(ident: &str) -> TokenType {
         "if" => TokenType::If,
         "else" => TokenType::Else,
         "return" => TokenType::Return,
+        "print" => TokenType::Print,
         "null" => TokenType::Null,
 
         _ => TokenType::Ident,
