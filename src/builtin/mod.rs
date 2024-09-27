@@ -4,10 +4,7 @@ pub struct Builtin;
 
 impl Builtin {
     pub fn all_builtins(&self) -> Vec<(String, Object)> {
-        vec![
-            (String::from("len"), Object::Builtin(b_len)),
-            (String::from("puts"), Object::Builtin(b_puts)),
-        ]
+        vec![(String::from("len"), Object::Builtin(b_len))]
     }
 }
 
@@ -28,12 +25,4 @@ fn b_len(args: Vec<Object>) -> Object {
             other.object_type()
         )),
     }
-}
-
-fn b_puts(args: Vec<Object>) -> Object {
-    for arg in args {
-        println!("{}", arg);
-    }
-
-    Object::Null
 }
