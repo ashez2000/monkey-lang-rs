@@ -13,12 +13,14 @@ pub const NULL: Object = Object::Null;
 
 pub struct Evaluator {
     env: Environment,
+    pub out: Vec<String>,
 }
 
 impl Evaluator {
     pub fn new() -> Self {
         Self {
             env: Environment::new(None),
+            out: vec![],
         }
     }
 
@@ -62,7 +64,7 @@ impl Evaluator {
 
             Statement::Print { expr, .. } => {
                 let expr = self.eval_expression(Some(expr));
-                println!("{}", expr);
+                self.out.push(expr.to_string());
                 Object::Null
             }
 

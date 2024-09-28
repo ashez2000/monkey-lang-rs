@@ -37,7 +37,9 @@ fn main() {
                 print_parse_errors(parser.get_errors());
             }
 
-            // println!("{}", _res);
+            for o in eval.out {
+                println!("{}", o);
+            }
         }
 
         _ => panic!("Invalid args len"),
