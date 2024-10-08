@@ -1,3 +1,5 @@
+mod util;
+
 #[cfg(test)]
 mod tests;
 
@@ -6,6 +8,7 @@ use std::ops::Deref;
 
 use crate::ast::*;
 use crate::object::*;
+use util::*;
 
 const TRUE: Object = Object::Boolean(true);
 const FALSE: Object = Object::Boolean(false);
@@ -47,7 +50,7 @@ impl Evaluator {
 
             Statement::Return { expr, .. } => {
                 let value = self.eval_expression(Some(expr));
-                if Self::is_error(&value) {
+                if is_error(&value) {
                     return value;
                 }
                 return Object::Return(Box::new(value));
@@ -55,7 +58,7 @@ impl Evaluator {
 
             Statement::Let { ident, expr, .. } => {
                 let value = self.eval_expression(Some(expr));
-                if Self::is_error(&value) {
+                if is_error(&value) {
                     return value;
                 }
 
@@ -96,12 +99,12 @@ impl Evaluator {
                 }),
                 Expression::Call(call_expr) => {
                     let function = self.eval_expression(Some(call_expr.function.deref().clone()));
-                    if Self::is_error(&function) {
+                    if is_error(&function) {
                         return function;
                     }
 
                     let args = self.eval_expressions(call_expr.arguments);
-                    if args.len() == 1 && Self::is_error(&args[0]) {
+                    if args.len() == 1 && is_error(&args[0]) {
                         return args[0].clone();
                     }
 
@@ -110,7 +113,7 @@ impl Evaluator {
 
                 Expression::Array(array_literal) => {
                     let elements = self.eval_expressions(array_literal.elements);
-                    if elements.len() == 1 && Self::is_error(&elements[0]) {
+                    if elements.len() == 1 && is_error(&elements[0]) {
                         return elements[0].clone();
                     }
                     Object::Array(elements)
@@ -121,7 +124,7 @@ impl Evaluator {
 
                     for (k, v) in hash.pairs {
                         let key = self.eval_expression(Some(k));
-                        if Self::is_error(&key) {
+                        if is_error(&key) {
                             return key;
                         }
 
@@ -133,7 +136,7 @@ impl Evaluator {
                         };
 
                         let value = self.eval_expression(Some(v));
-                        if Self::is_error(&value) {
+                        if is_error(&value) {
                             return value;
                         }
 
@@ -145,12 +148,12 @@ impl Evaluator {
 
                 Expression::Index(index_expr) => {
                     let left = self.eval_expression(Some(*index_expr.left));
-                    if Self::is_error(&left) {
+                    if is_error(&left) {
                         return left;
                     }
 
                     let index = self.eval_expression(Some(*index_expr.index));
-                    if Self::is_error(&index) {
+                    if is_error(&index) {
                         return index;
                     }
 
@@ -207,8 +210,9 @@ impl Evaluator {
             }
             (Object::Boolean(l), Object::Boolean(r), operator) => {
                 return match operator.as_str() {
-                    "==" => Self::native_bool_to_boolean_object(l == r),
-                    "!=" => Self::native_bool_to_boolean_object(l != r),
+                    "==" => native_bool_to_object(l == r),
+                    "!=" => native_bool_to_object(l != r),
+
                     _ => Object::Error(format!(
                         "unknown operator: {} {} {}",
                         left.object_type(),
@@ -243,10 +247,12 @@ impl Evaluator {
             "-" => Object::Integer(left - right),
             "*" => Object::Integer(left * right),
             "/" => Object::Integer(left / right),
-            "<" => Self::native_bool_to_boolean_object(left < right),
-            ">" => Self::native_bool_to_boolean_object(left > right),
-            "==" => Self::native_bool_to_boolean_object(left == right),
-            "!=" => Self::native_bool_to_boolean_object(left != right),
+
+            "<" => native_bool_to_object(left < right),
+            ">" => native_bool_to_object(left > right),
+            "==" => native_bool_to_object(left == right),
+            "!=" => native_bool_to_object(left != right),
+
             _ => NULL,
         }
     }
@@ -271,7 +277,7 @@ impl Evaluator {
     fn eval_if_expression(&mut self, exp: IfExpression) -> Object {
         let condition = self.eval_expression(Some(*exp.condition));
 
-        return if Self::is_truthy(condition) {
+        return if is_truthy(&condition) {
             self.eval_block_statement(exp.consequence)
         } else if let Some(alt) = exp.alternative {
             self.eval_block_statement(alt)
@@ -294,7 +300,7 @@ impl Evaluator {
 
         for exp in expressions {
             let evaluated = self.eval_expression(Some(exp));
-            if Self::is_error(&evaluated) {
+            if is_error(&evaluated) {
                 return vec![evaluated];
             }
             result.push(evaluated);
@@ -386,25 +392,11 @@ impl Evaluator {
 
         env
     }
+}
 
-    fn native_bool_to_boolean_object(bool: bool) -> Object {
-        if bool {
-            TRUE
-        } else {
-            FALSE
-        }
-    }
-
-    fn is_truthy(obj: Object) -> bool {
-        match obj {
-            Object::Null => false,
-            Object::Boolean(true) => true,
-            Object::Boolean(false) => false,
-            _ => true,
-        }
-    }
-
-    fn is_error(obj: &Object) -> bool {
-        obj.object_type() == "ERROR"
+fn native_bool_to_object(bool: bool) -> Object {
+    match bool {
+        true => TRUE,
+        false => FALSE,
     }
 }
