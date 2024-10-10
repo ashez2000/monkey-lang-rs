@@ -20,11 +20,13 @@ fn main() {
             let source = fs::read_to_string(&args[1]).expect("Failed to read script, Invalid path");
             let mut evaluator = Evaluator::new();
 
-            if let Some(r) = run(&source, &mut evaluator) {
+            if let Some((r, out)) = run(&source, &mut evaluator) {
                 if r.object_type() == "ERROR" {
                     println!("RUNTIME_ERROR: {}", r)
                 } else {
-                    println!("{}", r);
+                    for o in out {
+                        println!("{}", o);
+                    }
                 }
             }
         }
@@ -45,7 +47,7 @@ fn repl() {
         let mut buf = String::new();
         stdin().read_line(&mut buf).unwrap();
 
-        if let Some(r) = run(&buf, &mut evaluator) {
+        if let Some((r, _)) = run(&buf, &mut evaluator) {
             if r.object_type() == "ERROR" {
                 println!("RUNTIME_ERROR: {}", r)
             } else {
@@ -55,7 +57,7 @@ fn repl() {
     }
 }
 
-fn run(source: &str, eval: &mut Evaluator) -> Option<Object> {
+fn run(source: &str, eval: &mut Evaluator) -> Option<(Object, Vec<String>)> {
     let lexer = Lexer::new(source);
     let mut parser = Parser::new(lexer);
     let program = parser.parse_program();
@@ -65,7 +67,7 @@ fn run(source: &str, eval: &mut Evaluator) -> Option<Object> {
         return None;
     }
 
-    Some(eval.eval_program(program))
+    Some((eval.eval_program(program), eval.out.clone()))
 }
 
 fn print_parser_error(errors: &Vec<String>) {

@@ -6,4 +6,4 @@ let sum = fn (n) {
 	}
 }
 
-puts(sum(3));
+print sum(3);

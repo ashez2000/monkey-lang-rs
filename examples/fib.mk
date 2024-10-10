@@ -3,4 +3,4 @@ let fib = fn (n) {
 	return fib(n - 2) + fib(n - 1);
 }
 
-puts(fib(7))
+print fib(7);
